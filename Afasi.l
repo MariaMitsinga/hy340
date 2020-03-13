@@ -3,7 +3,8 @@
 	#include <string.h>
 	#include <stdlib.h>
 	#define  YY_DECL int alpha_yylex (void* ylval)
-	
+	//hello
+	int hello;
 	int comm=0;
 	int newwhite=0;
 	int newspace=0;
