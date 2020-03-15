@@ -17,31 +17,34 @@ static unsigned int SymTable_hash(const char *name)
     return uiHash%SIZE;
 }
 
+/* Einai gia ta arguments enos function */
 struct ArgFunction
 {
     char* name;
     struct ArgFunction* next;
 };
 
+/* einai gia tis metablhtes kai function mesa sto symbol table */
 struct SymTableEntry
 {
     const char *name;
     char* type;
     unsigned int scope;
     unsigned int line;
-    int isActive;
-    struct SymTableEntry* nextScopeList;
-    struct SymTableEntry* next;
+    int isActive; /* gia to hide */
+    struct ArgFunction* arg; /* pointer gia ta arguments an to stoixeio einai function alliws einai panta null */
+    struct SymTableEntry* nextScopeList; /* pointer gia to scope list opws sthn eikwna tou front */
+    struct SymTableEntry* next; /* pointer sto deksio stoixeio */
 };
 
+/* einai gia to pinaka tou hash dld ta portokali buckets tou front*/
 struct SymTable
 {
     struct SymTableEntry** head;
     unsigned int size;
 };
 
-
-
+/* kanw malloc ton hashtable */
 struct SymTable* SymTable_new(int size)
 {
     int i=0;
@@ -52,8 +55,16 @@ struct SymTable* SymTable_new(int size)
     return  node;
 }
 
-struct SymTable* ScopeTable;
+struct SymTable* ScopeTable; //pointer gia to deutero hashtable  poy deixnei sto scope list
 
+/* edw kanw eisagwgh sto scope hashtable
+   Koita ti kanw...
+   Otan prostithetai arxika enas kombos sto Symbol Table kanw malloc gia to node kai meta kalw auth thn synarthsh
+   kai bazw sto scope hashtable ena pointer pou na deixnei sto node pou molis prosthesa sto Symbol Table
+   den kanw duo nodes gia to idio stoixeio
+   Ola ta stoixeia se auto to table einai pointers kai deixnoun stous kombous tou Symbol Table
+    O logos pou ekana allo nextScopeList einai giati ama ekana xrhsh tou next blekontan kai ginotan xamos
+    */
 struct SymTable* insertNodeToScope(struct SymTable* root,struct SymTableEntry *node,int scope)
 {
     if(step<=scope)
@@ -64,13 +75,15 @@ struct SymTable* insertNodeToScope(struct SymTable* root,struct SymTableEntry *n
         //ScopeTable = (struct SymTable*)realloc(ScopeTable, sizeof(struct SymTable));
         ScopeTable->head=(struct SymTableEntry**)realloc(ScopeTable->head,step*sizeof(struct SymTableEntry*));
     }
-    struct SymTableEntry *tmp=root->head[scope];
+    struct SymTableEntry *tmp=root->head[scope]; // prosthetw sthn arxh ths listas
     node->nextScopeList=tmp;
     root->head[scope]=node;
     return root;
 }
 
-
+/* eisagwgh sto Symbol Table
+    einai mai aplh eisagwgh se hash table den xreiazetai na pw kati
+*/
 struct SymTable* insertNodeToHash(struct SymTable* root,const char* name,char* type,unsigned int scope,unsigned int line,int isActive)
 {
     unsigned int position= SymTable_hash(name);
@@ -86,6 +99,7 @@ struct SymTable* insertNodeToHash(struct SymTable* root,const char* name,char* t
     node->scope=scope;
     node->line=line;
     node->isActive=isActive;
+    node->arg=NULL;
 
     node->next=tmp;
     root->head[position]=node;
@@ -96,7 +110,9 @@ struct SymTable* insertNodeToHash(struct SymTable* root,const char* name,char* t
     return root;
 }
 
-
+/* kanw hide ta stoixeia enos sygkekrimenou scope
+    Epeidh ta stoixeia deixnoun sto Symbol Table, otan allazw kati sto Scope Table ginetai automata allagh kai
+    ston Symbol Table*/
 void Hide(struct SymTable* root,int scope)
 {
     struct SymTableEntry *tmp=root->head[scope];
@@ -108,50 +124,7 @@ void Hide(struct SymTable* root,int scope)
     return;
 }
 
-void printHash(struct SymTable* root)
-{
-    struct SymTableEntry* tmp;
-    int i;
-    for(i=0;i<SIZE;i++)
-    {
-        tmp=root->head[i];
-
-        if(root->head[i]==NULL)
-            continue;
-        printf("index%d:",i);
-        while(tmp)
-        {
-            if(tmp != root->head[i])
-                printf(",");
-            printf("<%s, %s, %d, %d, %d>",tmp->name,tmp->type,tmp->scope,tmp->line,tmp->isActive);
-            tmp=tmp->next;
-        }
-        printf("\n");
-    }
-}
-
-void printScopeTable(struct SymTable* ScopeTable)
-{
-    struct SymTableEntry* tmp;
-    int i;
-    for(i=0;i<step;i++)
-    {
-        tmp=ScopeTable->head[i];
-
-        if(ScopeTable->head[i]==NULL)
-            continue;
-        printf("index%d:",i);
-        while(tmp)
-        {
-            if(tmp != ScopeTable->head[i])
-                printf(",");
-            printf("<%s, %s, %d, %d, %d>",tmp->name,tmp->type,tmp->scope,tmp->line,tmp->isActive);
-            tmp=tmp->nextScopeList;
-        }
-        printf("\n");
-    }
-}
-
+/* psaxnw an uparxei hdh h metablhth sto Symbol Table */
 int NameLookUpInHash(struct SymTable* root,const char* name)
 {
     struct SymTableEntry* tmp;
@@ -170,6 +143,7 @@ int NameLookUpInHash(struct SymTable* root,const char* name)
     return 0;
 }
 
+/* psaxnw an uparxei hdh h metablhth se sugkekrimeno scope */
 int NameLookUpInScope(struct SymTable* root,unsigned int scope,const char* name)
 {
     struct SymTableEntry *tmp=root->head[scope];
@@ -182,15 +156,142 @@ int NameLookUpInScope(struct SymTable* root,unsigned int scope,const char* name)
     return 0;
 }
 
+/*  eisagwgh arg se function
+    to function pou antistoixei se auta nomizw oti einai to pio prosfato pou prostethke sto prohgoumeno scope,opote
+    etsi briskw ton patera kai meta prosthetw se auton ta paidia tou.Epishs ta prosthetw sto telos ths listas
+ */
+void insertArgToNode(struct SymTable* scopeTable,const char* name,int scope)
+{
+    struct SymTableEntry* fatherNode=scopeTable->head[scope-1];
+    struct ArgFunction* tmp=fatherNode->arg;
+    struct ArgFunction* Arg=(struct ArgFunction*)malloc(sizeof(struct ArgFunction));
+    Arg->name=strdup(name);
+    Arg->next=NULL;
+
+    if(fatherNode->arg==NULL)
+    {
+        fatherNode->arg=Arg;
+    }
+    else
+    {
+        while(tmp->next!=NULL)
+            tmp=tmp->next;
+        tmp->next=Arg;
+    }
+    return;
+}
+/* briskw to length ths scope listas me scope=0 kathws ekei briskontai ta lib functions(12 se arithmo)*/
+int LengthOfList(struct SymTable* scopeTable)
+{
+    int length=0;
+    struct SymTableEntry* tmp=scopeTable->head[0];
+    while(tmp!=NULL)
+    {
+        length++;
+        tmp=tmp->nextScopeList;
+    }
+    return length;
+}
+
+/* eksetazw an to ginetai shadow libfunc */
+int collisionLibFun(struct SymTable* scopeTable,const char* name)
+{
+    struct SymTableEntry* tmp=scopeTable->head[0];
+    int length=LengthOfList(scopeTable);
+    int skipLength=length-12;
+    while(skipLength!=0)
+    {
+        tmp=tmp->nextScopeList;
+        skipLength--;
+    }
+    while(tmp)
+    {
+        if(strcmp(name, tmp->name)==0)
+            return 1;
+        tmp=tmp->nextScopeList;
+    }
+    return 0;
+}
+
+void printHash(struct SymTable* root)
+{
+    struct SymTableEntry* tmp;
+    struct ArgFunction* arguments;
+    int i;
+    for(i=0;i<SIZE;i++)
+    {
+        tmp=root->head[i];
+
+        if(root->head[i]==NULL)
+            continue;
+        printf("index%d:",i);
+        while(tmp)
+        {
+            if(tmp != root->head[i])
+                printf(",");
+            printf("<%s, %s, %d, %d, %d>",tmp->name,tmp->type,tmp->scope,tmp->line,tmp->isActive);
+            if(tmp->arg!=NULL)
+            {
+                arguments=tmp->arg;
+                printf(" ( ");
+                while(arguments)
+                {
+                    printf("%s ",arguments->name);
+                    arguments=arguments->next;
+                }
+                printf(" ) ");
+            }
+            tmp=tmp->next;
+        }
+        printf("\n");
+    }
+}
+
+void printScopeTable(struct SymTable* ScopeTable)
+{
+    struct SymTableEntry* tmp;
+    struct ArgFunction* arguments;
+    int i;
+    for(i=0;i<step;i++)
+    {
+        tmp=ScopeTable->head[i];
+
+        if(ScopeTable->head[i]==NULL)
+            continue;
+        printf("index%d:",i);
+        while(tmp)
+        {
+            if(tmp != ScopeTable->head[i])
+                printf(",");
+            printf("<%s, %s, %d, %d, %d>",tmp->name,tmp->type,tmp->scope,tmp->line,tmp->isActive);
+            if(tmp->arg!=NULL)
+            {
+                arguments=tmp->arg;
+                printf(" ( ");
+                while(arguments)
+                {
+                    printf("%s ",arguments->name);
+                    arguments=arguments->next;
+                }
+                printf(" ) ");
+            }
+            tmp=tmp->nextScopeList;
+        }
+        printf("\n");
+    }
+}
+
 int main()
 {
     struct SymTable* Head=SymTable_new(509);
     ScopeTable=SymTable_new(100);
+    Head=insertNodeToHash(Head,"input","funLib",0,0,1);
     Head=insertNodeToHash(Head,"x","local",0,1,1);
     Head=insertNodeToHash(Head,"x","global",0,5,1);
     Head=insertNodeToHash(Head,"print","funLib",1,2,1);
     Head=insertNodeToHash(Head,"if","funLib",1,2,1);
     Head=insertNodeToHash(Head,"if","funLib",2,2,1);
+    Head=insertNodeToHash(Head,"input","funLib",2,3,1);
     //printf("Hello world!\n");
     printHash(Head);
     printf("\n\n");
@@ -204,8 +305,14 @@ int main()
     printf("%d",NameLookUpInScope(ScopeTable,0,"x"));
     printf("\n\n");
     printHash(Head);
-    printf("\n\n-------------");
-
+    printf("\n\n-------------\n");
+    insertArgToNode(ScopeTable,"alex",3);
+    insertArgToNode(ScopeTable,"maria",3);
+    insertArgToNode(ScopeTable,"marianthi",2);
+    printScopeTable(ScopeTable);
+    printf("\n\n");
+    printHash(Head);
+    //printf("collision: %d\n",collisionLibFun(ScopeTable,"input"));
     /*Head=insertNodeToHash(Head,"y","local",150,2,1);
     printHash(Head);
     printf("\n\n");
