@@ -124,58 +124,61 @@ CARRIAGE_RETURN	"\r"
 OTHER	.
 
 %%
-{CARRIAGE_RETURN}	{newwhite++;}
-{LEFT_CURLY_BRACKET}  	{AddToList(yylineno,numToken,"{","PUNCTUATION","LEFT_CURLY_BRACKET","enumerated"); numToken++;}
-{RIGHT_CURLY_BRACKET}  	{AddToList(yylineno,numToken,"}","PUNCTUATION","RIGHT_CURLY_BRACKET","enumerated"); numToken++;}
-{LEFT_SQUARE_BRACKET}  	{AddToList(yylineno,numToken,"[","PUNCTUATION","LEFT_SQUARE_BRACKET","enumerated"); numToken++;}
-{RIGHT_SQUARE_BRACKET}  {AddToList(yylineno,numToken,"]","PUNCTUATION","RIGHT_SQUARE_BRACKET","enumerated"); numToken++;}
-{LEFT_PARENTHESES}  	{AddToList(yylineno,numToken,"(","PUNCTUATION","LEFT_PARENTHESES","enumerated"); numToken++;}
-{RIGHT_PARENTHESES}  	{AddToList(yylineno,numToken,")","PUNCTUATION","RIGHT_PARENTHESES","enumerated"); numToken++;}
-{SEMI_COLON}  	{AddToList(yylineno,numToken,";","PUNCTUATION","SEMI_COLON","enumerated"); numToken++;}
-{COMMA}  	{AddToList(yylineno,numToken,",","PUNCTUATION","COMMA","enumerated"); numToken++;}
-{COLON}  	{AddToList(yylineno,numToken,":","PUNCTUATION", "COLON","enumerated"); numToken++;}
-{NAMESPACE_ALIAS_QUALIFIER}  {AddToList(yylineno,numToken,"::","PUNCTUATION","NAMESPACE_ALIAS_QUALIFIER","enumerated"); numToken++;}
-{DOT}  		{AddToList(yylineno,numToken,".","PUNCTUATION","DOT","enumerated"); numToken++;}
-{DOUBLE_DOT} 	{AddToList(yylineno,numToken,"..","PUNCTUATION","DOUBLE_DOT","enumerated"); numToken++;}
+{CARRIAGE_RETURN}	{newwhite++; return CARRIAGE_RETURN;}
+{LEFT_CURLY_BRACKET}  	{AddToList(yylineno,numToken,"{","PUNCTUATION","LEFT_CURLY_BRACKET","enumerated"); numToken++; return LEFT_CURLY_BRACKET;}
+{RIGHT_CURLY_BRACKET}  	{AddToList(yylineno,numToken,"}","PUNCTUATION","RIGHT_CURLY_BRACKET","enumerated"); numToken++; return RIGHT_CURLY_BRACKET;}
+{LEFT_SQUARE_BRACKET}  	{AddToList(yylineno,numToken,"[","PUNCTUATION","LEFT_SQUARE_BRACKET","enumerated"); numToken++; return LEFT_SQUARE_BRACKET;}
+{RIGHT_SQUARE_BRACKET}  {AddToList(yylineno,numToken,"]","PUNCTUATION","RIGHT_SQUARE_BRACKET","enumerated"); numToken++; return RIGHT_SQUARE_BRACKET;}
+{LEFT_PARENTHESES}  	{AddToList(yylineno,numToken,"(","PUNCTUATION","LEFT_PARENTHESES","enumerated"); numToken++; rerurn LEFT_PARENTHESES;}
+{RIGHT_PARENTHESES}  	{AddToList(yylineno,numToken,")","PUNCTUATION","RIGHT_PARENTHESES","enumerated"); numToken++; rerurn RIGHT_PARENTHESES;}
+{SEMI_COLON}  	{AddToList(yylineno,numToken,";","PUNCTUATION","SEMI_COLON","enumerated"); numToken++; rerurn SEMI_COLON;}
+{COMMA}  	{AddToList(yylineno,numToken,",","PUNCTUATION","COMMA","enumerated"); numToken++; rerurn COMMA;}
+{COLON}  	{AddToList(yylineno,numToken,":","PUNCTUATION", "COLON","enumerated"); numToken++; rerurn COLON;}
+{NAMESPACE_ALIAS_QUALIFIER}  {AddToList(yylineno,numToken,"::","PUNCTUATION","NAMESPACE_ALIAS_QUALIFIER","enumerated"); numToken++; rerurn NAMESPACE_ALIAS_QUALIFIER;}
+{DOT}  		{AddToList(yylineno,numToken,".","PUNCTUATION","DOT","enumerated"); numToken++; rerurn DOT;}
+{DOUBLE_DOT} 	{AddToList(yylineno,numToken,"..","PUNCTUATION","DOUBLE_DOT","enumerated"); numToken++; rerurn DOUBLE_DOT;}
 
-{SPACE}		{newspace=+1;}
-{IF}            {AddToList(yylineno,numToken,"if","KEY WORD","IF","enumerated"); numToken++;}
+{SPACE}		{newspace=+1; return SPACE;}
+{IF}            {AddToList(yylineno,numToken,"if","KEY WORD","IF","enumerated"); numToken++; return IF;}
 
-{ELSE}          {AddToList(yylineno,numToken,"else","KEYWORD","ELSE" ,"enumerated"); numToken++;}
-{WHILE}         {AddToList(yylineno,numToken,"while","KEYWORD","WHILE" ,"enumerated"); numToken++;}
-{FOR}           {AddToList(yylineno,numToken,"for","KEYWORD","FOR" ,"enumerated"); numToken++;}
-{FUNCTION}      {AddToList(yylineno,numToken,"function","KEYWORD","FUNCTION" ,"enumerated"); numToken++;}
-{RETURN}        {AddToList(yylineno,numToken,"return","KEYWORD","RETURN" ,"enumerated"); numToken++;}
-{BREAK}         {AddToList(yylineno,numToken,"break","KEYWORD","BREAK" ,"enumerated"); numToken++;}
-{CONTINUE}      {AddToList(yylineno,numToken,"continue","KEYWORD","CONTINUE" ,"enumerated"); numToken++;}
-{AND}           {AddToList(yylineno,numToken,"and","KEYWORD","AND", "enumerated"); numToken++;}
-{NOT}           {AddToList(yylineno,numToken,"not","KEYWORD","NOT" ,"enumerated"); numToken++;}
-{OR}            {AddToList(yylineno,numToken,"or","KEYWORD","OR" ,"enumerated"); numToken++;}
-{LOCAL}         {AddToList(yylineno,numToken,"local","KEYWORD","LOCAL" ,"enumerated"); numToken++;}
-{TRUE}          {AddToList(yylineno,numToken,"true","KEYWORD","TRUE" ,"enumerated"); numToken++;}
-{FALSE}         {AddToList(yylineno,numToken,"false","KEYWORD","FALSE" ,"enumerated"); numToken++;}
-{NIL}           {AddToList(yylineno,numToken,"nil","KEYWORD","NIL", "enumerated"); numToken++;}
-{EQUAL}         {AddToList(yylineno,numToken,yytext,"OPERATOR","EQUAL" ,"enumerated"); numToken++;}
-{PLUS}          {AddToList(yylineno,numToken,yytext,"OPERATOR","PLUS" ,"enumerated"); numToken++;}
-{MINUS}         {AddToList(yylineno,numToken,yytext,"OPERATOR","MINUS" ,"enumerated"); numToken++;}
-{MULTIPLE}		{AddToList(yylineno,numToken,yytext,"OPERATOR","MULTIPLE" ,"enumerated"); numToken++;}
-{FORWARD_SLASH} {AddToList(yylineno,numToken,yytext,"OPERATOR","FORWARD_SLASH" ,"enumerated"); numToken++;}
-{PERCENT}       {AddToList(yylineno,numToken,yytext,"OPERATOR","PERCENT" ,"enumerated"); numToken++;}
-{DOUBLE_EQUAL}  {AddToList(yylineno,numToken,yytext,"OPERATOR","DOUBLE_EQUAL" ,"enumerated"); numToken++;}
-{NOT_EQUAL}     {AddToList(yylineno,numToken,yytext,"OPERATOR","NOT_EQUAL" ,"enumerated"); numToken++;}
-{DOUBLE_PLUS}   {AddToList(yylineno,numToken,yytext,"OPERATOR","DOUBLE_PLUS" ,"enumerated"); numToken++;}
-{DOUBLE_MINUS}  {AddToList(yylineno,numToken,yytext,"OPERATOR","DOUBLE_MINUS" ,"enumerated"); numToken++;}
-{GREATER}       {AddToList(yylineno,numToken,yytext,"OPERATOR","GREATER" ,"enumerated"); numToken++;}
-{LESS}		{AddToList(yylineno,numToken,yytext,"OPERATOR","LESS" ,"enumerated"); numToken++;}
-{GREATER_EQUAL}   {AddToList(yylineno,numToken,yytext,"OPERATOR","GREATER_EQUAL" ,"enumerated"); numToken++;}
-{LESS_EQUAL}      {AddToList(yylineno,numToken,yytext,"OPERATOR","LESS_EQUAL" ,"enumerated"); numToken++;}
+{ELSE}          {AddToList(yylineno,numToken,"else","KEYWORD","ELSE" ,"enumerated"); numToken++; return ELSE;}
+{WHILE}         {AddToList(yylineno,numToken,"while","KEYWORD","WHILE" ,"enumerated"); numToken++; return WHILE;}
+{FOR}           {AddToList(yylineno,numToken,"for","KEYWORD","FOR" ,"enumerated"); numToken++; return FOR;}
+{FUNCTION}      {AddToList(yylineno,numToken,"function","KEYWORD","FUNCTION" ,"enumerated"); numToken++; return FUNCTION;}
+{RETURN}        {AddToList(yylineno,numToken,"return","KEYWORD","RETURN" ,"enumerated"); numToken++; return RETURN;}
+{BREAK}         {AddToList(yylineno,numToken,"break","KEYWORD","BREAK" ,"enumerated"); numToken++; return BREAK;}
+{CONTINUE}      {AddToList(yylineno,numToken,"continue","KEYWORD","CONTINUE" ,"enumerated"); numToken++; return CONTINUE;}
+{AND}           {AddToList(yylineno,numToken,"and","KEYWORD","AND", "enumerated"); numToken++; return AND;}
+{NOT}           {AddToList(yylineno,numToken,"not","KEYWORD","NOT" ,"enumerated"); numToken++; return NOT;}
+{OR}            {AddToList(yylineno,numToken,"or","KEYWORD","OR" ,"enumerated"); numToken++; return OR;}
+{LOCAL}         {AddToList(yylineno,numToken,"local","KEYWORD","LOCAL" ,"enumerated"); numToken++; return LOCAL;}
+{TRUE}          {AddToList(yylineno,numToken,"true","KEYWORD","TRUE" ,"enumerated"); numToken++; return TRUE;}
+{FALSE}         {AddToList(yylineno,numToken,"false","KEYWORD","FALSE" ,"enumerated"); numToken++; return FALSE;}
+{NIL}           {AddToList(yylineno,numToken,"nil","KEYWORD","NIL", "enumerated"); numToken++; return NIL;}
+{EQUAL}         {AddToList(yylineno,numToken,yytext,"OPERATOR","EQUAL" ,"enumerated"); numToken++; return EQUAL;}
+{PLUS}          {AddToList(yylineno,numToken,yytext,"OPERATOR","PLUS" ,"enumerated"); numToken++; return PLUS;}
+{MINUS}         {AddToList(yylineno,numToken,yytext,"OPERATOR","MINUS" ,"enumerated"); numToken++; return MINUS;}
+{MULTIPLE}		{AddToList(yylineno,numToken,yytext,"OPERATOR","MULTIPLE" ,"enumerated"); numToken++; return MULTIPLE;}
+{FORWARD_SLASH} {AddToList(yylineno,numToken,yytext,"OPERATOR","FORWARD_SLASH" ,"enumerated"); numToken++; return FORWARD_SLASH;}
+{PERCENT}       {AddToList(yylineno,numToken,yytext,"OPERATOR","PERCENT" ,"enumerated"); numToken++; return PERCENT;}
+{DOUBLE_EQUAL}  {AddToList(yylineno,numToken,yytext,"OPERATOR","DOUBLE_EQUAL" ,"enumerated"); numToken++; return DOUBLE_EQUAL;}
+{NOT_EQUAL}     {AddToList(yylineno,numToken,yytext,"OPERATOR","NOT_EQUAL" ,"enumerated"); numToken++; return NOT_EQUAL;}
+{DOUBLE_PLUS}   {AddToList(yylineno,numToken,yytext,"OPERATOR","DOUBLE_PLUS" ,"enumerated"); numToken++; return DOUBLE_PLUS;}
+{DOUBLE_MINUS}  {AddToList(yylineno,numToken,yytext,"OPERATOR","DOUBLE_MINUS" ,"enumerated"); numToken++; return DOUBLE_MINUS;}
+{GREATER}       {AddToList(yylineno,numToken,yytext,"OPERATOR","GREATER" ,"enumerated"); numToken++; return GREATER;}
+{LESS}		{AddToList(yylineno,numToken,yytext,"OPERATOR","LESS" ,"enumerated"); numToken++; return LESS;}
+{GREATER_EQUAL}   {AddToList(yylineno,numToken,yytext,"OPERATOR","GREATER_EQUAL" ,"enumerated"); numToken++; return GREATER_EQUAL;}
+{LESS_EQUAL}      {AddToList(yylineno,numToken,yytext,"OPERATOR","LESS_EQUAL" ,"enumerated"); numToken++; return LESS_EQUAL;}
 
-{NEWTAB}	{newtab=+1;}
-{NEWLINE}	{newline=+1;}
+{NEWTAB}	{newtab=+1; return NEWTAB;}
+{NEWLINE}	{newline=+1; return NEWLINE;}
 
-{id}		{AddToList(yylineno,numToken,yytext,"ID",yytext,"char*"); numToken++;}
-{NUMBER}    	{AddToList(yylineno,numToken,yytext,"CONST_INT",yytext,"integer"); numToken++;}
-{FLOAT}		{AddToList(yylineno,numToken,yytext,"REAL_CONST",yytext,"float"); numToken++;}
+{id}		{AddToList(yylineno,numToken,yytext,"ID",yytext,"char*"); numToken++; yylval.strVal =strdup(yytext);
+			 return id;}
+{NUMBER}    	{AddToList(yylineno,numToken,yytext,"CONST_INT",yytext,"integer"); numToken++; yylval.intVal = atoi(yytext); 
+			 return NUMBER;}
+{FLOAT}		{AddToList(yylineno,numToken,yytext,"REAL_CONST",yytext,"float"); numToken++; yylval.dbVal= atof(yytext);
+			 return FLOAT;}
 {STRING}    {
 			//printf("yytext=%s\n",yytext);
 			int a=0;
@@ -201,6 +204,7 @@ OTHER	.
                                         //printf("---word=%s---\n",word);
 					//char* input = (char *)malloc(sizeof(char)*i);
 					AddToList(yylineno,numToken,word,"STRING",word,"char*"); 
+					return word;
 					numToken++;
 					free(word);
                                       	flag=0;
@@ -341,7 +345,7 @@ OTHER	.
 			//free(num);
 			//free(wher);
 		}
-{OTHER}	{printf("ERROR: Undefine character \"%s\"\n", yytext);}
+{OTHER}	{printf("ERROR: Undefine character \"%s\"\n", yytext); rerurn OTHER;}
 
 %%
 /*
