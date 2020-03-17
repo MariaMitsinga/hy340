@@ -93,14 +93,44 @@
 
 %%
 
-
-indexed:	indexedelem indexed1	{fprintf(yyout, "indexed\n");}
-		| /* empty */		{fprintf(yyout, "indexed\n");}
+program:	stamt {fprintf(yyout," program ==> stmt \n");}
 		;
 
-indexed1: 	COMMA indexedelem indexed1	{fprintf(yyout, "indexed\n");}
-		| /* empty */	{fprintf(yyout, "indexed\n");}
-		;
+stamt:	stmt stamt {fprintf(yyout," stamt ==> stmt stamt\n");}
+	| /* empty*/ {fprintf(yyout,"stamt ==> empty \n");}
+	;
+
+stmt:	expr SEMI_COLON {fprintf(yyout," stmt ==> expr ;\n");}
+	|BREAK SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
+	|CONTINUE SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
+	|returnstmt {fprintf(yyout," stmt ==> returnstmt ;\n");}
+	;
+
+expr:	expr PLUS expr {fprintf(yyout," expr ==> expr + expr \n");}
+	|expr MINUS expr {fprintf(yyout," expr ==> expr - expr \n");}
+	|expr MULTIPLE expr {fprintf(yyout," expr ==> expr * expr \n");}
+	|expr FORWARD_SLASH expr {fprintf(yyout," expr ==> expr / expr \n");}
+	|expr PERCENT expr {fprintf(yyout," expr ==> expr % expr \n");}
+	|expr GREATER expr {fprintf(yyout," expr ==> expr > expr \n");}
+	|expr GREATER_EQUAL expr {fprintf(yyout," expr ==> expr >= expr \n");}
+	|expr LESS  expr {fprintf(yyout," expr ==> expr < expr \n");}
+	|expr LESS_EQUAL expr {fprintf(yyout," expr ==> expr <= expr \n");}
+	|expr DOUBLE_EQUAL expr {fprintf(yyout," expr ==> expr == expr \n");}
+	|expr NOT_EQUAL expr {fprintf(yyout," expr ==> expr != expr \n");}
+	|expr AND expr {fprintf(yyout," expr ==> expr && expr \n");}
+	|expr OR expr {fprintf(yyout," expr ==> expr || expr \n");}
+	| term {fprintf(yyout," expr ==> term \n");}
+	;
+
+
+term:	LEFT_PARENTHESES expr RIGHT_PARENTHESES {fprintf(yyout," term ==> (expr) \n");}
+	| MINUS expr {fprintf(yyout," term ==> -expr \n");}
+	| NOT expr {fprintf(yyout," term ==> !expr \n");}
+	| primary {fprintf(yyout," term ==> primary \n");}
+	;
+
+primary: const {fprintf(yyout," primary ==> const \n");}
+	 ;
 
 elist:	 	expr elist1	{fprintf(yyout, "elist\n");}
 		| /* empty */	{fprintf(yyout, "elist\n");}
@@ -110,12 +140,32 @@ elist1:		COMMA expr elist1	{fprintf(yyout, "elist\n");}
 		| /* empty */	{fprintf(yyout, "elist\n");}
 		;
 
+indexed:	indexedelem indexed1	{fprintf(yyout, "indexed\n");}
+		| /* empty */		{fprintf(yyout, "indexed\n");}
+		;
+
+indexed1: 	COMMA indexedelem indexed1	{fprintf(yyout, "indexed\n");}
+		| /* empty */	{fprintf(yyout, "indexed\n");}
+		;
+
+const:		NUMBER {fprintf(yyout," const ==> number \n");}
+		| STRING {fprintf(yyout," const ==> string \n");}
+		| NIL {fprintf(yyout," const ==> nil \n");}
+		| TRUE {fprintf(yyout," const ==> true \n");}
+		| FALSE {fprintf(yyout," const ==> false \n");}
+		| FLOAT {fprintf(yyout," const ==> float \n");}
+		;
+
 idlist:		id idlist1	{fprintf(yyout, "id,id* ==> idlist;\n");}
 		| /* empty */	{fprintf(yyout, "id,id* ==> idlist;\n");}
 		;	
 
 idlist1:	COMMA id idlist1	{fprintf(yyout, "id,id* ==> idlist;\n");}
 		| /* empty */	{fprintf(yyout, "id,id* ==> idlist;\n");}
+		;
+
+returnstmt:	RETURN SEMI_COLON {fprintf(yyout,"returnstmt ==> return ;\n");}
+		| RETURN expr SEMI_COLON {fprintf(yyout,"returnstmt ==> return expr;\n");}
 		;
 
 %%
