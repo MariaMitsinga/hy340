@@ -4,9 +4,8 @@
 	#include <string.h>
 	#include <assert.h>	
 	
-	int yylex (void);
 	int yyerror (char* yaccProvidedMessage);
-	
+	int yylex (void);
 	
 	extern int yylineno;
 	extern char * yyval;
@@ -18,71 +17,71 @@
 %start program
 
 
-%token id
-%token NUMBER
-%token FLOAT		
-%token STRING			
-%token NEWLINE			
-%token NEWTAB			
-%token IF              
-%token ELSE            
-%token WHILE           
-%token FOR            
-%token FUNCTION       
-%token RETURN          
-%token BREAK          
-%token CONTINUE        
-%token AND     
-%token NOT             
-%token OR          
-%token LOCAL      
-%token TRUE       
-%token FALSE         
-%token NIL         
-%token SPACE		
-%token EQUAL		
-%token PLUS		
-%token MINUS		
-%token MULTIPLE	
-%token FORWARD_SLASH	
-%token BACKWARD_SLASH	
-%token PERCENT		
-%token DOUBLE_EQUAL	
-%token NOT_EQUAL	
-%token DOUBLE_PLUS	
-%token DOUBLE_MINUS	
-%token GREATER		
-%token LESS	
-%token GREATER_EQUAL	
-%token LESS_EQUAL	
-%token LEFT_CURLY_BRACKET	
-%token RIGHT_CURLY_BRACKET     
-%token LEFT_SQUARE_BRACKET	
-%token RIGHT_SQUARE_BRACKET
-%token LEFT_PARENTHESES	
-%token RIGHT_PARENTHESES	
-%token SEMI_COLON		
-%token COMMA		
-%token COLON		
-%token NAMESPACE_ALIAS_QUALIFIER 
-%token DOT			
-%token DOUBLE_DOT	
-%token LINE_COMMENT 	
-%token MULTI_COMMENT 	
-%token CARRIAGE_RETURN	
-%token OTHER
+%token	id
+%token	NUMBER
+%token	FLOAT		
+%token	STRING			
+%token	NEWLINE
+%token	NEWTAB
+%token	IF              
+%token	ELSE            
+%token	WHILE           
+%token	FOR            
+%token	FUNCTION       
+%token	RETURN          
+%token	BREAK          
+%token	CONTINUE        
+%token	AND     
+%token	NOT             
+%token	OR          
+%token	LOCAL      
+%token	TRUE       
+%token	FALSE         
+%token	NIL         
+%token 	SPACE
+%token	EQUAL
+%token	PLUS		
+%token	MINUS		
+%token	MULTIPLE	
+%token	FORWARD_SLASH	
+%token	BACKWARD_SLASH	
+%token	PERCENT		
+%token	DOUBLE_EQUAL	
+%token	NOT_EQUAL	
+%token	DOUBLE_PLUS	
+%token	DOUBLE_MINUS	
+%token	GREATER		
+%token	LESS	
+%token	GREATER_EQUAL	
+%token	LESS_EQUAL	
+%token	LEFT_CURLY_BRACKET	
+%token	RIGHT_CURLY_BRACKET     
+%token	LEFT_SQUARE_BRACKET	
+%token	RIGHT_SQUARE_BRACKET
+%token	LEFT_PARENTHESES	
+%token	RIGHT_PARENTHESES	
+%token	SEMI_COLON		
+%token	COMMA		
+%token	COLON		
+%token	NAMESPACE_ALIAS_QUALIFIER 
+%token	DOT			
+%token	DOUBLE_DOT	
+%token	LINE_COMMENT 	
+%token	MULTI_COMMENT 	
+%token	CARRIAGE_RETURN	
+%token	OTHER
 
-%right EQUAL
-%left OR
-%left AND
-%nonassoc DOUBLE_EQUAL NOT_EQUAL
-%nonassoc GREATER GREATER_EQUAL LESS LESS_EQUAL
-%left PLUS MINUS
-%left MULTIPLE FORWARD_SLASH PERCENT
-%right NOT DOUBLE_PLUS DOUBLE_MINUS
-%left DOT DOUBLE_DOT
-%left LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET
-%left LEFT_PARENTHESES RIGHT_PARENTHESES
+%right	EQUAL
+%left	OR
+%left	AND
+%nonassoc	DOUBLE_EQUAL NOT_EQUAL
+%nonassoc	GREATER GREATER_EQUAL LESS LESS_EQUAL
+%left	PLUS MINUS
+%left	MULTIPLE FORWARD_SLASH PERCENT
+%right	NOT DOUBLE_PLUS DOUBLE_MINUS
+%left	DOT DOUBLE_DOT
+%left	LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET
+%left	LEFT_PARENTHESES RIGHT_PARENTHESES
 
 
 %union
@@ -94,58 +93,29 @@
 
 %%
 
-program:	stamt {fprintf(yyout," program ==> stmt \n");}
+
+indexed:	indexedelem indexed1	{fprintf(yyout, "indexed\n");}
+		| /* empty */		{fprintf(yyout, "indexed\n");}
 		;
 
-stamt:	stmt stamt {fprintf(yyout," stamt ==> stmt stamt\n");}
-	| /* empty*/ {fprintf(yyout,"stamt ==> empty \n");}
-	;
+indexed1: 	COMMA indexedelem indexed1	{fprintf(yyout, "indexed\n");}
+		| /* empty */	{fprintf(yyout, "indexed\n");}
+		;
 
-stmt:	expr SEMI_COLON {fprintf(yyout," stmt ==> expr ;\n");}
-	|BREAK SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
-	|CONTINUE SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
-	|returnstmt {fprintf(yyout," stmt ==> returnstmt ;\n");}
-	;
+elist:	 	expr elist1	{fprintf(yyout, "elist\n");}
+		| /* empty */	{fprintf(yyout, "elist\n");}
+		;
 
-expr:	expr PLUS expr {fprintf(yyout," expr ==> expr + expr \n");}
-	|expr MINUS expr {fprintf(yyout," expr ==> expr - expr \n");}
-	|expr MULTIPLE expr {fprintf(yyout," expr ==> expr * expr \n");}
-	|expr FORWARD_SLASH expr {fprintf(yyout," expr ==> expr / expr \n");}
-	|expr PERCENT expr {fprintf(yyout," expr ==> expr % expr \n");}
-	|expr GREATER expr {fprintf(yyout," expr ==> expr > expr \n");}
-	|expr GREATER_EQUAL expr {fprintf(yyout," expr ==> expr >= expr \n");}
-	|expr LESS  expr {fprintf(yyout," expr ==> expr < expr \n");}
-	|expr LESS_EQUAL expr {fprintf(yyout," expr ==> expr <= expr \n");}
-	|expr DOUBLE_EQUAL expr {fprintf(yyout," expr ==> expr == expr \n");}
-	|expr NOT_EQUAL expr {fprintf(yyout," expr ==> expr != expr \n");}
-	|expr AND expr {fprintf(yyout," expr ==> expr && expr \n");}
-	|expr OR expr {fprintf(yyout," expr ==> expr || expr \n");}
-	| term {fprintf(yyout," expr ==> term \n");}
-	;
+elist1:		COMMA expr elist1	{fprintf(yyout, "elist\n");}
+		| /* empty */	{fprintf(yyout, "elist\n");}
+		;
 
+idlist:		id idlist1	{fprintf(yyout, "id,id* ==> idlist;\n");}
+		| /* empty */	{fprintf(yyout, "id,id* ==> idlist;\n");}
+		;	
 
-term:	LEFT_PARENTHESES expr RIGHT_PARENTHESES {fprintf(yyout," term ==> (expr) \n");}
-	| MINUS expr {fprintf(yyout," term ==> -expr \n");}
-	| NOT expr {fprintf(yyout," term ==> !expr \n");}
-	| primary {fprintf(yyout," term ==> primary \n");}
-	;
-
-primary: const {fprintf(yyout," primary ==> const \n");}
-	 ;
-
-
-
-const:	NUMBER {fprintf(yyout," const ==> number \n");}
-	| STRING {fprintf(yyout," const ==> string \n");}
-	| NIL {fprintf(yyout," const ==> nil \n");}
-	| TRUE {fprintf(yyout," const ==> true \n");}
-	| FALSE {fprintf(yyout," const ==> false \n");}
-	| FLOAT {fprintf(yyout," const ==> float \n");}
-	;
-
-
-returnstmt:	RETURN SEMI_COLON {fprintf(yyout,"returnstmt ==> return ;\n");}
-		| RETURN expr SEMI_COLON {fprintf(yyout,"returnstmt ==> return expr;\n");}
+idlist1:	COMMA id idlist1	{fprintf(yyout, "id,id* ==> idlist;\n");}
+		| /* empty */	{fprintf(yyout, "id,id* ==> idlist;\n");}
 		;
 
 %%
@@ -153,6 +123,7 @@ returnstmt:	RETURN SEMI_COLON {fprintf(yyout,"returnstmt ==> return ;\n");}
 int yyerror (char* yaccProvidedMessage)
 {
 	fprintf(stderr, "%s: at line %d, before token: '%s'\n", yaccProvidedMessage, yylineno, yytext);
+	fprintf(stderr, "INPUT NOT VALID\n");
 }
 
 int main(int argc, char** argv)
