@@ -132,6 +132,33 @@ term:	LEFT_PARENTHESES expr RIGHT_PARENTHESES {fprintf(yyout," term ==> (expr) \
 primary: const {fprintf(yyout," primary ==> const \n");}
 	 ;
 
+lvalue:		id
+		| LOCAL id
+		| NAMESPACE_ALIAS_QUALIFIER id
+		| member
+		;
+
+member:		lvalue DOT id
+		| lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
+		| call DOT id
+		| call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
+		;
+
+call:		call LEFT_PARENTHESES elist RIGHT_PARENTHESES
+		| lvalue callsuffix
+		| LEFT_PARENTHESES funcdef RIGHT_PARENTHESES LEFT_PARENTHESES elist RIGHT_PARENTHESES
+		;
+	
+callsuffix:	normcall
+		| methodcall
+		;
+
+normcall:	LEFT_PARENTHESES elist RIGHT_PARENTHESES
+		;	
+
+methodcall:	DOUBLE_DOT id LEFT_PARENTHESES elist RIGHT_PARENTHESES 
+		;
+
 elist:	 	expr elist1	{fprintf(yyout, "elist\n");}
 		| /* empty */	{fprintf(yyout, "elist\n");}
 		;
@@ -140,13 +167,7 @@ elist1:		COMMA expr elist1	{fprintf(yyout, "elist\n");}
 		| /* empty */	{fprintf(yyout, "elist\n");}
 		;
 
-indexed:	indexedelem indexed1	{fprintf(yyout, "indexed\n");}
-		| /* empty */		{fprintf(yyout, "indexed\n");}
-		;
-
-indexed1: 	COMMA indexedelem indexed1	{fprintf(yyout, "indexed\n");}
-		| /* empty */	{fprintf(yyout, "indexed\n");}
-		;
+funcdef: 	FUNCTION LEFT_SQUARE_BRACKET id RIGHT_SQUARE_BRACKET LEFT_PARENTHESES idlist RIGHT_PARENTHESES block
 
 const:		NUMBER {fprintf(yyout," const ==> number \n");}
 		| STRING {fprintf(yyout," const ==> string \n");}
