@@ -94,7 +94,7 @@
 %%
 
 program:	stmt
-		| /*empty*/
+		| 
 		;
 
 stmt: 	expr SEMI_COLON
@@ -102,8 +102,8 @@ stmt: 	expr SEMI_COLON
 	| whilestmt
 	| forstmt
 	| returnstmt
-	| break SEMI_COLON
-	| continue SEMI_COLON
+	| BREAK SEMI_COLON
+	| CONTINUE SEMI_COLON
 	| block
 	| funcdef
 	| ;
@@ -124,37 +124,88 @@ term:	LEFT_PARENTHESES expr RIGHT_PARENTHESES
 	| DOUBLE_MINUS lvalue
 	| lvalue DOUBLE_MINUS
 	| primary
+	;
 
 assginexpr:	lvalue EQUAL expr
+		;
 
 primary:	lvalue
 		| call
 		| objectdef
 		| LEFT_PARENTHESES funcdef RIGHT_PARENTHESES
 		| const
-
+		;
+	
 lvalue:		id
-		| local id
+		| LOCAL id
 		| NAMESPACE_ALIAS_QUALIFIER id
 		| member
+		;
 
 member:		lvalue DOT id
 		| lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
 		| call DOT id
 		| call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
+		;
 
 call:		call LEFT_PARENTHESES elist RIGHT_PARENTHESES
 		| lvalue callsuffix
 		| LEFT_PARENTHESES funcdef RIGHT_PARENTHESES LEFT_PARENTHESES elist RIGHT_PARENTHESES
+		;
 
 callsuffix:	normcall
 		| methodcall
+		;
 
 normcall:	LEFT_PARENTHESES elist RIGHT_PARENTHESES
 methodcall:	DOUBLE_DOT id LEFT_PARENTHESES elist RIGHT_PARENTHESES // equivalent to lvalue.id(lvalue, elist)
 
-elist:		LEFT_SQUARE_BRACKET expr [, expr] ? ]
 
+
+objectdef:	LEFT_SQUARE_BRACKET elist
+		| indexed RIGHT_SQUARE_BRACKET
+
+
+
+indexedelem: 	LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET
+
+block: 		LEFT_CURLY_BRACKET stmt RIGHT_CURLY_BRACKET
+		| LEFT_CURLY_BRACKET block1 RIGHT_CURLY_BRACKET
+		;
+
+block1:		stmt
+		| stmt block1
+		;
+
+funcdef: 	function LEFT_SQUARE_BRACKET id RIGHT_SQUARE_BRACKET LEFT_PARENTHESES idlist RIGHT_PARENTHESES block
+
+const: 		NUMBER 
+		| STRING
+		| NIL 
+		| TRUE 
+		| FALSE
+		;
+
+idlist:		id
+		| idcomm id
+		;
+
+idcomm:		COMMA id
+		| COMMA id idcomm
+		;		
+
+ifstmt:		IF LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt
+		| IF LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt ELSE stmt
+		;
+
+whilestmt:	WHILE LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt
+		;
+
+forstmt:	FOR LEFT_PARENTHESES elist SEMI_COLON expr SEMI_COLON elist RIGHT_PARENTHESES stmt
+
+returnstmt:	RETURN expr SEMI_COLON
+		| RETURN SEMI_COLON
+		;
 
 %%
 
