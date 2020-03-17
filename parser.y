@@ -96,67 +96,61 @@
 program:	stamt {fprintf(yyout," program ==> stmt \n");}
 		;
 
-stamt:	stmt stamt {fprintf(yyout," stamt ==> stmt stamt\n");}
-	| /* empty*/ {fprintf(yyout,"stamt ==> empty \n");}
-	;
-
-stmt:	expr SEMI_COLON {fprintf(yyout," stmt ==> expr ;\n");}
-	|BREAK SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
-	|CONTINUE SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
-	|returnstmt {fprintf(yyout," stmt ==> returnstmt ;\n");}
-	;
-
-expr:	expr PLUS expr {fprintf(yyout," expr ==> expr + expr \n");}
-	|expr MINUS expr {fprintf(yyout," expr ==> expr - expr \n");}
-	|expr MULTIPLE expr {fprintf(yyout," expr ==> expr * expr \n");}
-	|expr FORWARD_SLASH expr {fprintf(yyout," expr ==> expr / expr \n");}
-	|expr PERCENT expr {fprintf(yyout," expr ==> expr % expr \n");}
-	|expr GREATER expr {fprintf(yyout," expr ==> expr > expr \n");}
-	|expr GREATER_EQUAL expr {fprintf(yyout," expr ==> expr >= expr \n");}
-	|expr LESS  expr {fprintf(yyout," expr ==> expr < expr \n");}
-	|expr LESS_EQUAL expr {fprintf(yyout," expr ==> expr <= expr \n");}
-	|expr DOUBLE_EQUAL expr {fprintf(yyout," expr ==> expr == expr \n");}
-	|expr NOT_EQUAL expr {fprintf(yyout," expr ==> expr != expr \n");}
-	|expr AND expr {fprintf(yyout," expr ==> expr && expr \n");}
-	|expr OR expr {fprintf(yyout," expr ==> expr || expr \n");}
-	| term {fprintf(yyout," expr ==> term \n");}
-	;
-
-
-term:	LEFT_PARENTHESES expr RIGHT_PARENTHESES {fprintf(yyout," term ==> (expr) \n");}
-	| MINUS expr {fprintf(yyout," term ==> -expr \n");}
-	| NOT expr {fprintf(yyout," term ==> !expr \n");}
-	| primary {fprintf(yyout," term ==> primary \n");}
-	;
-
-primary: const {fprintf(yyout," primary ==> const \n");}
-	 ;
-
-lvalue:		id
-		| LOCAL id
-		| NAMESPACE_ALIAS_QUALIFIER id
-		| member
+stamt:		stmt stamt {fprintf(yyout," stamt ==> stmt stamt\n");}
+		| /* empty*/ {fprintf(yyout,"stamt ==> empty \n");}
 		;
 
-member:		lvalue DOT id
-		| lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
-		| call DOT id
-		| call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
+stmt:		expr SEMI_COLON {fprintf(yyout," stmt ==> expr ;\n");}
+		|BREAK SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
+		|CONTINUE SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
+		|returnstmt {fprintf(yyout," stmt ==> returnstmt ;\n");}
+		;
+
+expr:		expr PLUS expr {fprintf(yyout," expr ==> expr + expr \n");}
+		|expr MINUS expr {fprintf(yyout," expr ==> expr - expr \n");}
+		|expr MULTIPLE expr {fprintf(yyout," expr ==> expr * expr \n");}
+		|expr FORWARD_SLASH expr {fprintf(yyout," expr ==> expr / expr \n");}
+		|expr PERCENT expr {fprintf(yyout," expr ==> expr % expr \n");}
+		|expr GREATER expr {fprintf(yyout," expr ==> expr > expr \n");}
+		|expr GREATER_EQUAL expr {fprintf(yyout," expr ==> expr >= expr \n");}
+		|expr LESS  expr {fprintf(yyout," expr ==> expr < expr \n");}
+		|expr LESS_EQUAL expr {fprintf(yyout," expr ==> expr <= expr \n");}
+		|expr DOUBLE_EQUAL expr {fprintf(yyout," expr ==> expr == expr \n");}
+		|expr NOT_EQUAL expr {fprintf(yyout," expr ==> expr != expr \n");}
+		|expr AND expr {fprintf(yyout," expr ==> expr && expr \n");}
+		|expr OR expr {fprintf(yyout," expr ==> expr || expr \n");}
+		| term {fprintf(yyout," expr ==> term \n");}
+		;
+
+
+term:		LEFT_PARENTHESES expr RIGHT_PARENTHESES {fprintf(yyout," term ==> (expr) \n");}
+		| MINUS expr {fprintf(yyout," term ==> -expr \n");}
+		| NOT expr {fprintf(yyout," term ==> !expr \n");}
+		| DOUBLE_PLUS lvalue 	{fprintf(yyout," term ==> ++lvalue \n");}
+		| lvalue DOUBLE_PLUS	{fprintf(yyout," term ==> lvalue++ \n");}
+		| DOUBLE_MINUS lvalue	{fprintf(yyout," term ==> --lvalue \n");}
+		| lvalue DOUBLE_MINUS	{fprintf(yyout," term ==> lvalue-- \n");}
+		| primary {fprintf(yyout," term ==> primary \n");}
+		;
+
+primary:  	lvalue	{fprintf(yyout," primary ==> Ivalue \n");}
+		| call
+		| const {fprintf(yyout," primary ==> const \n");}
+	 	;
+
+lvalue:		id	{fprintf(yyout," Ivalue ==> id \n");}
+		| LOCAL id	{fprintf(yyout," Ivalue ==> local \n");}
+		| NAMESPACE_ALIAS_QUALIFIER id	{fprintf(yyout," Ivalue ==> ::id \n");}
+		| member	{fprintf(yyout," Ivalue ==> member \n");}
+		;
+
+member:		lvalue DOT id	{fprintf(yyout," Member ==> .id \n");}
+		| lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET	{fprintf(yyout," Member ==> [expr] \n");}
+		| call DOT id	{fprintf(yyout," Member ==> call.id \n");}
+		| call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET {fprintf(yyout," Member ==> call[expr] \n");}
 		;
 
 call:		call LEFT_PARENTHESES elist RIGHT_PARENTHESES
-		| lvalue callsuffix
-		| LEFT_PARENTHESES funcdef RIGHT_PARENTHESES LEFT_PARENTHESES elist RIGHT_PARENTHESES
-		;
-	
-callsuffix:	normcall
-		| methodcall
-		;
-
-normcall:	LEFT_PARENTHESES elist RIGHT_PARENTHESES
-		;	
-
-methodcall:	DOUBLE_DOT id LEFT_PARENTHESES elist RIGHT_PARENTHESES 
 		;
 
 elist:	 	expr elist1	{fprintf(yyout, "elist\n");}
@@ -167,7 +161,6 @@ elist1:		COMMA expr elist1	{fprintf(yyout, "elist\n");}
 		| /* empty */	{fprintf(yyout, "elist\n");}
 		;
 
-funcdef: 	FUNCTION LEFT_SQUARE_BRACKET id RIGHT_SQUARE_BRACKET LEFT_PARENTHESES idlist RIGHT_PARENTHESES block
 
 const:		NUMBER {fprintf(yyout," const ==> number \n");}
 		| STRING {fprintf(yyout," const ==> string \n");}
@@ -175,14 +168,6 @@ const:		NUMBER {fprintf(yyout," const ==> number \n");}
 		| TRUE {fprintf(yyout," const ==> true \n");}
 		| FALSE {fprintf(yyout," const ==> false \n");}
 		| FLOAT {fprintf(yyout," const ==> float \n");}
-		;
-
-idlist:		id idlist1	{fprintf(yyout, "id,id* ==> idlist;\n");}
-		| /* empty */	{fprintf(yyout, "id,id* ==> idlist;\n");}
-		;	
-
-idlist1:	COMMA id idlist1	{fprintf(yyout, "id,id* ==> idlist;\n");}
-		| /* empty */	{fprintf(yyout, "id,id* ==> idlist;\n");}
 		;
 
 returnstmt:	RETURN SEMI_COLON {fprintf(yyout,"returnstmt ==> return ;\n");}
