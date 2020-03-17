@@ -1,8 +1,9 @@
 %{
-	#include "parser.h"
+	
 	#include <stdio.h>
 	#include <string.h>
 	#include <stdlib.h>
+	#include "parser.h"
 	/*#define  YY_DECL int alpha_yylex (void* ylval)*/
 	
 	int comm=0;
@@ -54,10 +55,10 @@
 			}
 			node->alpha_yylex=tmp;
 		}
-		if(strcmp(tmp->type2,"char*")==0)
+		/*if(strcmp(tmp->type2,"char*")==0)
 			printf("%u: #%u \"%s\" %s  \"%s\" <- %s\n",tmp->numline,tmp->numToken,tmp->content,tmp->type,tmp->value,tmp->type2);
 		else
-                       	printf("%u: #%u \"%s\" %s  %s <- %s\n",tmp->numline,tmp->numToken,tmp->content,tmp->type,tmp->value,tmp->type2);
+                       	printf("%u: #%u \"%s\" %s  %s <- %s\n",tmp->numline,tmp->numToken,tmp->content,tmp->type,tmp->value,tmp->type2);*/
 
 		return;
 	}
@@ -66,7 +67,7 @@
 
 %option noyywrap
 %option yylineno 
-%option prefix="alpha"
+
 
 id		[a-zA-Z][a-zA-Z_0-9]*
 NUMBER		[0-9]+
@@ -82,9 +83,9 @@ FUNCTION        "function"
 RETURN          "return"
 BREAK           "break"
 CONTINUE        "continue"
-AND             "and"
-NOT             "not"
-OR              "or"
+AND             "&&"
+NOT             "!"
+OR              "||"
 LOCAL           "local"
 TRUE            "true"
 FALSE           "false"
@@ -124,21 +125,21 @@ CARRIAGE_RETURN	"\r"
 OTHER	.
 
 %%
-{CARRIAGE_RETURN}	{newwhite++; return CARRIAGE_RETURN;}
+{CARRIAGE_RETURN}	{newwhite++;}
 {LEFT_CURLY_BRACKET}  	{AddToList(yylineno,numToken,"{","PUNCTUATION","LEFT_CURLY_BRACKET","enumerated"); numToken++; return LEFT_CURLY_BRACKET;}
 {RIGHT_CURLY_BRACKET}  	{AddToList(yylineno,numToken,"}","PUNCTUATION","RIGHT_CURLY_BRACKET","enumerated"); numToken++; return RIGHT_CURLY_BRACKET;}
 {LEFT_SQUARE_BRACKET}  	{AddToList(yylineno,numToken,"[","PUNCTUATION","LEFT_SQUARE_BRACKET","enumerated"); numToken++; return LEFT_SQUARE_BRACKET;}
 {RIGHT_SQUARE_BRACKET}  {AddToList(yylineno,numToken,"]","PUNCTUATION","RIGHT_SQUARE_BRACKET","enumerated"); numToken++; return RIGHT_SQUARE_BRACKET;}
-{LEFT_PARENTHESES}  	{AddToList(yylineno,numToken,"(","PUNCTUATION","LEFT_PARENTHESES","enumerated"); numToken++; rerurn LEFT_PARENTHESES;}
-{RIGHT_PARENTHESES}  	{AddToList(yylineno,numToken,")","PUNCTUATION","RIGHT_PARENTHESES","enumerated"); numToken++; rerurn RIGHT_PARENTHESES;}
-{SEMI_COLON}  	{AddToList(yylineno,numToken,";","PUNCTUATION","SEMI_COLON","enumerated"); numToken++; rerurn SEMI_COLON;}
-{COMMA}  	{AddToList(yylineno,numToken,",","PUNCTUATION","COMMA","enumerated"); numToken++; rerurn COMMA;}
-{COLON}  	{AddToList(yylineno,numToken,":","PUNCTUATION", "COLON","enumerated"); numToken++; rerurn COLON;}
-{NAMESPACE_ALIAS_QUALIFIER}  {AddToList(yylineno,numToken,"::","PUNCTUATION","NAMESPACE_ALIAS_QUALIFIER","enumerated"); numToken++; rerurn NAMESPACE_ALIAS_QUALIFIER;}
-{DOT}  		{AddToList(yylineno,numToken,".","PUNCTUATION","DOT","enumerated"); numToken++; rerurn DOT;}
-{DOUBLE_DOT} 	{AddToList(yylineno,numToken,"..","PUNCTUATION","DOUBLE_DOT","enumerated"); numToken++; rerurn DOUBLE_DOT;}
+{LEFT_PARENTHESES}  	{AddToList(yylineno,numToken,"(","PUNCTUATION","LEFT_PARENTHESES","enumerated"); numToken++; return LEFT_PARENTHESES;}
+{RIGHT_PARENTHESES}  	{AddToList(yylineno,numToken,")","PUNCTUATION","RIGHT_PARENTHESES","enumerated"); numToken++; return RIGHT_PARENTHESES;}
+{SEMI_COLON}  	{AddToList(yylineno,numToken,";","PUNCTUATION","SEMI_COLON","enumerated"); numToken++; return SEMI_COLON;}
+{COMMA}  	{AddToList(yylineno,numToken,",","PUNCTUATION","COMMA","enumerated"); numToken++; return COMMA;}
+{COLON}  	{AddToList(yylineno,numToken,":","PUNCTUATION", "COLON","enumerated"); numToken++; return COLON;}
+{NAMESPACE_ALIAS_QUALIFIER}  {AddToList(yylineno,numToken,"::","PUNCTUATION","NAMESPACE_ALIAS_QUALIFIER","enumerated"); numToken++; return NAMESPACE_ALIAS_QUALIFIER;}
+{DOT}  		{AddToList(yylineno,numToken,".","PUNCTUATION","DOT","enumerated"); numToken++; return DOT;}
+{DOUBLE_DOT} 	{AddToList(yylineno,numToken,"..","PUNCTUATION","DOUBLE_DOT","enumerated"); numToken++; return DOUBLE_DOT;}
 
-{SPACE}		{newspace=+1; return SPACE;}
+{SPACE}		{newspace=+1; }
 {IF}            {AddToList(yylineno,numToken,"if","KEY WORD","IF","enumerated"); numToken++; return IF;}
 
 {ELSE}          {AddToList(yylineno,numToken,"else","KEYWORD","ELSE" ,"enumerated"); numToken++; return ELSE;}
@@ -170,8 +171,8 @@ OTHER	.
 {GREATER_EQUAL}   {AddToList(yylineno,numToken,yytext,"OPERATOR","GREATER_EQUAL" ,"enumerated"); numToken++; return GREATER_EQUAL;}
 {LESS_EQUAL}      {AddToList(yylineno,numToken,yytext,"OPERATOR","LESS_EQUAL" ,"enumerated"); numToken++; return LESS_EQUAL;}
 
-{NEWTAB}	{newtab=+1; return NEWTAB;}
-{NEWLINE}	{newline=+1; return NEWLINE;}
+{NEWTAB}	{newtab=+1; }
+{NEWLINE}	{newline=+1; }
 
 {id}		{AddToList(yylineno,numToken,yytext,"ID",yytext,"char*"); numToken++; yylval.strVal =strdup(yytext);
 			 return id;}
@@ -204,10 +205,11 @@ OTHER	.
                                         //printf("---word=%s---\n",word);
 					//char* input = (char *)malloc(sizeof(char)*i);
 					AddToList(yylineno,numToken,word,"STRING",word,"char*"); 
-					return word;
 					numToken++;
+					yylval.strVal =strdup(word);
 					free(word);
                                       	flag=0;
+					return STRING;
 					break;
                                 }
 				else if((c== '\\' ) && (slash==0))    
@@ -345,7 +347,7 @@ OTHER	.
 			//free(num);
 			//free(wher);
 		}
-{OTHER}	{printf("ERROR: Undefine character \"%s\"\n", yytext); rerurn OTHER;}
+{OTHER}	{printf("ERROR: Undefine character \"%s\"\n", yytext); }
 
 %%
 /*

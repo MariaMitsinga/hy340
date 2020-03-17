@@ -4,8 +4,9 @@
 	#include <string.h>
 	#include <assert.h>	
 	
-	int yyerror (char* yaccProvidedMessage);
 	int yylex (void);
+	int yyerror (char* yaccProvidedMessage);
+	
 	
 	extern int yylineno;
 	extern char * yyval;
@@ -93,118 +94,58 @@
 
 %%
 
-program:	stmt
-		| 
+program:	stamt {fprintf(yyout," program ==> stmt \n");}
 		;
 
-stmt: 	expr SEMI_COLON
-	| ifstmt
-	| whilestmt
-	| forstmt
-	| returnstmt
-	| BREAK SEMI_COLON
-	| CONTINUE SEMI_COLON
-	| block
-	| funcdef
-	| ;
-
-expr:	assignexpr
-	| expr op expr
-	| term
+stamt:	stmt stamt {fprintf(yyout," stamt ==> stmt stamt\n");}
+	| /* empty*/ {fprintf(yyout,"stamt ==> empty \n");}
 	;
 
-op:	PLUS | MINUS | MULTIPLE  | FORWARD_SLASH | PERCENT | GREATER  | GREATER_EQUAL | LESS  | LESS_EQUAL | DOUBLE_EQUAL | NOT_EQUAL | AND | OR
+stmt:	expr SEMI_COLON {fprintf(yyout," stmt ==> expr ;\n");}
+	|BREAK SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
+	|CONTINUE SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
+	|returnstmt {fprintf(yyout," stmt ==> returnstmt ;\n");}
 	;
 
-term:	LEFT_PARENTHESES expr RIGHT_PARENTHESES
-	| MINUS expr
-	| NOT expr
-	| lvalue
-	| lvalue DOUBLE_PLUS
-	| DOUBLE_MINUS lvalue
-	| lvalue DOUBLE_MINUS
-	| primary
+expr:	expr PLUS expr {fprintf(yyout," expr ==> expr + expr \n");}
+	|expr MINUS expr {fprintf(yyout," expr ==> expr - expr \n");}
+	|expr MULTIPLE expr {fprintf(yyout," expr ==> expr * expr \n");}
+	|expr FORWARD_SLASH expr {fprintf(yyout," expr ==> expr / expr \n");}
+	|expr PERCENT expr {fprintf(yyout," expr ==> expr % expr \n");}
+	|expr GREATER expr {fprintf(yyout," expr ==> expr > expr \n");}
+	|expr GREATER_EQUAL expr {fprintf(yyout," expr ==> expr >= expr \n");}
+	|expr LESS  expr {fprintf(yyout," expr ==> expr < expr \n");}
+	|expr LESS_EQUAL expr {fprintf(yyout," expr ==> expr <= expr \n");}
+	|expr DOUBLE_EQUAL expr {fprintf(yyout," expr ==> expr == expr \n");}
+	|expr NOT_EQUAL expr {fprintf(yyout," expr ==> expr != expr \n");}
+	|expr AND expr {fprintf(yyout," expr ==> expr && expr \n");}
+	|expr OR expr {fprintf(yyout," expr ==> expr || expr \n");}
+	| term {fprintf(yyout," expr ==> term \n");}
 	;
 
-assginexpr:	lvalue EQUAL expr
-		;
 
-primary:	lvalue
-		| call
-		| objectdef
-		| LEFT_PARENTHESES funcdef RIGHT_PARENTHESES
-		| const
-		;
-	
-lvalue:		id
-		| LOCAL id
-		| NAMESPACE_ALIAS_QUALIFIER id
-		| member
-		;
+term:	LEFT_PARENTHESES expr RIGHT_PARENTHESES {fprintf(yyout," term ==> (expr) \n");}
+	| MINUS expr {fprintf(yyout," term ==> -expr \n");}
+	| NOT expr {fprintf(yyout," term ==> !expr \n");}
+	| primary {fprintf(yyout," term ==> primary \n");}
+	;
 
-member:		lvalue DOT id
-		| lvalue LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
-		| call DOT id
-		| call LEFT_SQUARE_BRACKET expr RIGHT_SQUARE_BRACKET
-		;
-
-call:		call LEFT_PARENTHESES elist RIGHT_PARENTHESES
-		| lvalue callsuffix
-		| LEFT_PARENTHESES funcdef RIGHT_PARENTHESES LEFT_PARENTHESES elist RIGHT_PARENTHESES
-		;
-
-callsuffix:	normcall
-		| methodcall
-		;
-
-normcall:	LEFT_PARENTHESES elist RIGHT_PARENTHESES
-methodcall:	DOUBLE_DOT id LEFT_PARENTHESES elist RIGHT_PARENTHESES // equivalent to lvalue.id(lvalue, elist)
+primary: const {fprintf(yyout," primary ==> const \n");}
+	 ;
 
 
 
-objectdef:	LEFT_SQUARE_BRACKET elist
-		| indexed RIGHT_SQUARE_BRACKET
+const:	NUMBER {fprintf(yyout," const ==> number \n");}
+	| STRING {fprintf(yyout," const ==> string \n");}
+	| NIL {fprintf(yyout," const ==> nil \n");}
+	| TRUE {fprintf(yyout," const ==> true \n");}
+	| FALSE {fprintf(yyout," const ==> false \n");}
+	| FLOAT {fprintf(yyout," const ==> float \n");}
+	;
 
 
-
-indexedelem: 	LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET
-
-block: 		LEFT_CURLY_BRACKET stmt RIGHT_CURLY_BRACKET
-		| LEFT_CURLY_BRACKET block1 RIGHT_CURLY_BRACKET
-		;
-
-block1:		stmt
-		| stmt block1
-		;
-
-funcdef: 	function LEFT_SQUARE_BRACKET id RIGHT_SQUARE_BRACKET LEFT_PARENTHESES idlist RIGHT_PARENTHESES block
-
-const: 		NUMBER 
-		| STRING
-		| NIL 
-		| TRUE 
-		| FALSE
-		;
-
-idlist:		id
-		| idcomm id
-		;
-
-idcomm:		COMMA id
-		| COMMA id idcomm
-		;		
-
-ifstmt:		IF LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt
-		| IF LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt ELSE stmt
-		;
-
-whilestmt:	WHILE LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt
-		;
-
-forstmt:	FOR LEFT_PARENTHESES elist SEMI_COLON expr SEMI_COLON elist RIGHT_PARENTHESES stmt
-
-returnstmt:	RETURN expr SEMI_COLON
-		| RETURN SEMI_COLON
+returnstmt:	RETURN SEMI_COLON {fprintf(yyout,"returnstmt ==> return ;\n");}
+		| RETURN expr SEMI_COLON {fprintf(yyout,"returnstmt ==> return expr;\n");}
 		;
 
 %%
