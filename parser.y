@@ -3,6 +3,7 @@
 	#include <stdlib.h>
 	#include <string.h>
 	#include <assert.h>	
+	#include "SymTable.h"
 	
 	int yyerror (char* yaccProvidedMessage);
 	int yylex (void);
