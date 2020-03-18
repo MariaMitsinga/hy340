@@ -4,7 +4,7 @@
 #include <string.h>
 #define HASH_MULTIPLIER 65599
 #define SIZE 509
-
+int perv_step=0;
 int step=100;
 /* Return a hash code for name. */
 static unsigned int SymTable_hash(const char *name)
@@ -67,13 +67,25 @@ struct SymTable* ScopeTable; //pointer gia to deutero hashtable  poy deixnei sto
     */
 struct SymTable* insertNodeToScope(struct SymTable* root,struct SymTableEntry *node,int scope)
 {
+    //struct SymTable* tmp2;
+    //printf("scope:%d\n",scope);
     if(step<=scope)
     {
-
-        step=2*step;
-        printf("step:%d\nscope:%d",step,scope);
+        perv_step=step;
+        while(step<=scope)
+            step=2*step;
+        //printf("step:%d\n",step);
+        //printf("prin to realloc\n");
+        //printf("step:%d\nscope:%d",step,scope);
         //ScopeTable = (struct SymTable*)realloc(ScopeTable, sizeof(struct SymTable));
-        ScopeTable->head=(struct SymTableEntry**)realloc(ScopeTable->head,step*sizeof(struct SymTableEntry*));
+        ScopeTable->head=(struct SymTableEntry**)realloc(ScopeTable->head,step*sizeof(struct SymTableEntry));
+        //tmp2=ScopeTable->head[perv_step];
+        while(perv_step<step)
+        {
+            ScopeTable->head[perv_step]=NULL;
+            perv_step++;
+        }
+        //printf("meta to realloc\n");
 
     }
     struct SymTableEntry *tmp=root->head[scope];
@@ -268,10 +280,10 @@ void printHash(struct SymTable* root)
 void printScopeTable(struct SymTable* ScopeTable)
 {
     struct SymTableEntry* tmp;
-    struct ArgFunction* arguments;
     int i;
     for(i=0;i<step;i++)
     {
+        //printf("i=%d\n",i);
         tmp=ScopeTable->head[i];
 
         if(ScopeTable->head[i]==NULL)
@@ -279,20 +291,7 @@ void printScopeTable(struct SymTable* ScopeTable)
         printf("------------ Scope #%d ------------\n",i);
         while(tmp)
         {
-            //if(tmp != ScopeTable->head[i])
-                //printf(",");
             printf(" \"%s\"  [%s]  (line %d)  (scope %d)\n",tmp->name,tmp->type,tmp->line,tmp->scope);
-            /*if(tmp->arg!=NULL)
-            {
-                arguments=tmp->arg;
-                printf(" ( ");
-                while(arguments)
-                {
-                    printf("%s ",arguments->name);
-                    arguments=arguments->next;
-                }
-                printf(" ) ");
-            }*/
             tmp=tmp->nextScopeList;
         }
         printf("\n");
@@ -320,7 +319,7 @@ int main()
     printf("\n\n");
     printHash(Head);
     printf("\n\n");
-    printf("%d",NameLookUpInScope(ScopeTable,0,"x"));
+    printf("%s",NameLookUpInScope(ScopeTable,0,"x")->name);
     printf("\n\n");
     printHash(Head);
     printf("\n\n\n");
@@ -332,7 +331,7 @@ int main()
     printHash(Head);
     printf("\n\n");
     printf("collision: %d\n",collisionLibFun(ScopeTable,"input"));
-    /*Head=insertNodeToHash(Head,"y","local",150,2,1);
+    Head=insertNodeToHash(Head,"y","local",150,2,1);
     printHash(Head);
     printf("\n\n");
     printScopeTable(ScopeTable);
@@ -342,9 +341,18 @@ int main()
     printf("\n\n");
     printScopeTable(ScopeTable);
     printf("\n\n");
-    Head=insertNodeToHash(Head,"k","local",567,2,1);
+    Head=insertNodeToHash(Head,"z","local",567,2,1);
     printHash(Head);
     printf("\n\n");
-    printScopeTable(ScopeTable);*/
+    printScopeTable(ScopeTable);
+    printf("\n\n");
+    Head=insertNodeToHash(Head,"w","local",800,2,1);
+    Head=insertNodeToHash(Head,"w","local",1601,2,1);
+    Head=insertNodeToHash(Head,"w","local",800,2,1);
+    Head=insertNodeToHash(Head,"w","local",602,2,1);
+    Head=insertNodeToHash(Head,"w","local",3200,2,1);
+    printHash(Head);
+    printf("\n\n");
+    printScopeTable(ScopeTable);
     return 0;
 }
