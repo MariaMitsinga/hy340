@@ -13,6 +13,8 @@
 	extern char * yytext;
 	extern FILE * yyin;
 	extern FILE * yyout;
+	
+	int scope=0;
 %}
 
 %start program
@@ -198,7 +200,7 @@ indexed1: 	COMMA indexedelem indexed1	{fprintf(yyout," indexed ==> indexedelem i
 indexedelem: 	LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET	{fprintf(yyout," indexedelem ==> { expr : expr } \n");}
 		;
 
-block:		LEFT_CURLY_BRACKET stamt RIGHT_CURLY_BRACKET {fprintf(yyout," block ==> { [stmt] } \n");}
+block:		LEFT_CURLY_BRACKET {scope++; fprintf(yyout,"%d\n",scope);} stamt RIGHT_CURLY_BRACKET {scope--; fprintf(yyout,"%d\n",scope);fprintf(yyout," block ==> { [stmt] } \n");}
 		;
 
 funcdef: 	FUNCTION LEFT_PARENTHESES idlist RIGHT_PARENTHESES block	{fprintf(yyout," funcdef ==> function(){} \n");}
@@ -267,8 +269,23 @@ int main(int argc, char** argv)
 		fprintf(stderr, "WTF...Give mama some arguments ;P \n");
 		return 0;
 	}
+	
+	//obj = SymTable_new();
+	
+	struct SymTable* Head=SymTable_new(509);
+    ScopeTable=SymTable_new(100);
+    Head=insertNodeToHash(Head,"print","funLib",0,0,0);
+    Head=insertNodeToHash(Head,"input","funLib",0,1,0);
+    Head=insertNodeToHash(Head,"objectmemberkeys","funLib",0,2,0);
+    Head=insertNodeToHash(Head,"objectcopy","funLib",0,3,0);
+    Head=insertNodeToHash(Head,"totalarguments","funLib",0,4,0);
+	Head=insertNodeToHash(Head,"arguments","funLib",0,5,0);
+    Head=insertNodeToHash(Head,"typeof","funLib",0,6,0);
+    Head=insertNodeToHash(Head,"stronum","funLib",0,7,0);
+    Head=insertNodeToHash(Head,"sqrt","funLib",0,8,0);
+    Head=insertNodeToHash(Head,"cos","funLib",0,9,0);
+    Head=insertNodeToHash(Head,"sin","funLib",0,10,0);
+    
 	yyparse();
-	
-	
 	return 0;
 }
