@@ -110,8 +110,8 @@ stmt:		expr SEMI_COLON {fprintf(yyout," stmt ==> expr ;\n");}
 		|returnstmt {fprintf(yyout," stmt ==> returnstmt ;\n");}
 		|BREAK SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
 		|CONTINUE SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
-		|block
-		|funcdef
+		|block {fprintf(yyout," stmt ==> {} \n");}
+		|funcdef {fprintf(yyout," stmt ==> funcdef \n");}
 		;
 
 expr:		assgnexpr {fprintf(yyout," expr ==> assgnexpr \n");}
@@ -151,9 +151,66 @@ primary:  	lvalue	{fprintf(yyout," primary ==> Ivalue \n");}
 		| const {fprintf(yyout," primary ==> const \n");}
 	 	;
 
-lvalue:		id	{fprintf(yyout," Ivalue ==> id \n");}
-		| LOCAL id	{fprintf(yyout," Ivalue ==> local \n");}
-		| NAMESPACE_ALIAS_QUALIFIER id	{fprintf(yyout," Ivalue ==> ::id \n");}
+lvalue:		id	{
+				fprintf(yyout," lvalue ==> id \n");
+				int i=scope,j,flag=0;
+				struct SymTableEntry *tmp,*tmp2;	
+				for(i=scope;i>-1;i--)
+				{
+					tmp=NameLookUpInScope(ScopeTable,i,yytext);
+					if(tmp!=NULL) //ean brethke kati me idio onoma
+					{
+						if( ( strcmp("global", tmp->type)==0 || strcmp("local", tmp->type)==0 ) && i!=scope && i!=0)//ean afora metablhth tote psaxnw gia thn lathos periptwsh
+						{
+							for(j=scope-1;j>=i;j--)
+							{
+								tmp2=ScopeTable->head[j];
+								while(tmp2!=NULL)
+								{
+									if(strcmp("user function", tmp2->type)==0 && tmp2->isActive==1)
+									{
+										flag=1;
+										fprintf(yyout,"\n\nCan not access %s in line %d\n\n",tmp->name,yylineno);
+										break;
+									}
+									tmp2=tmp2->nextScopeList;
+								}
+								if(flag==1)
+									break;
+							}
+						}
+						break;
+					}
+				}
+				if(i==-1)
+				{
+					if(scope==0)
+						insertNodeToHash(Head,yytext,"global",scope,yylineno,1);
+					else
+						insertNodeToHash(Head,yytext,"local",scope,yylineno,1);
+				}
+			}
+		| LOCAL id	{	
+					fprintf(yyout," Ivalue ==> local \n");
+					struct SymTableEntry *tmp=NameLookUpInScope(ScopeTable,scope,yytext);
+					if(tmp==NULL && collisionLibFun(ScopeTable,yytext)==1)
+						fprintf(yyout,"\n\nlocal %s: Trying to shadow Library Function in line %d\n\n",yytext,yylineno);
+					if(tmp==NULL && collisionLibFun(ScopeTable,yytext)==0)
+					{
+						if(scope==0)
+							insertNodeToHash(Head,yytext,"global",scope,yylineno,1);
+						else
+							insertNodeToHash(Head,yytext,"local",scope,yylineno,1);
+
+					}
+
+				}
+		| NAMESPACE_ALIAS_QUALIFIER id	{
+							fprintf(yyout," Ivalue ==> ::id \n");
+							struct SymTableEntry *tmp=NameLookUpInScope(ScopeTable,0,yytext);
+							if(tmp==NULL)
+								printf("\n\nThere is no member on global scope with the name %s nn Line %d\n\n", yytext,yylineno);
+						}
 		| member	{fprintf(yyout," Ivalue ==> member \n");}
 		;
 
@@ -200,7 +257,9 @@ indexed1: 	COMMA indexedelem indexed1	{fprintf(yyout," indexed ==> indexedelem i
 indexedelem: 	LEFT_CURLY_BRACKET expr COLON expr RIGHT_CURLY_BRACKET	{fprintf(yyout," indexedelem ==> { expr : expr } \n");}
 		;
 
-block:		LEFT_CURLY_BRACKET {scope++; fprintf(yyout,"%d\n",scope);} stamt RIGHT_CURLY_BRACKET {scope--; fprintf(yyout,"%d\n",scope);fprintf(yyout," block ==> { [stmt] } \n");}
+block:		LEFT_CURLY_BRACKET {scope++; } stamt RIGHT_CURLY_BRACKET {	Hide(ScopeTable,scope);
+										scope--; 
+										fprintf(yyout," block ==> { [stmt] } \n");}
 		;
 
 funcdef: 	FUNCTION LEFT_PARENTHESES idlist RIGHT_PARENTHESES block	{fprintf(yyout," funcdef ==> function(){} \n");}
@@ -247,45 +306,40 @@ int yyerror (char* yaccProvidedMessage)
 
 int main(int argc, char** argv)
 {
-
-	if (argc == 3){
-		if( !(yyin = fopen(argv[1], "r")) ) {
-			fprintf(stderr, "Cannot Open File: %s\n", argv[1]);
-			yyin = stdin;
-		}
-		if(!(yyout = fopen(argv[2], "w")) )
+	if(argc > 1)
+	{
+		if(!(yyin = fopen(argv[1],"r")))
 		{
-			fprintf(stderr, "Cannot Open File: %s\n", argv[2]);
-			yyout = stdout;
+			fprintf(stderr,"Cannot read file: %s\n",argv[1]);
+			return 0;
 		}
 	}
-	else if (argc == 2){
-		if( !(yyin = fopen(argv[1], "r")) ) {
-			fprintf(stderr, "Cannot Open File: %s\n", argv[1]);
-			yyin = stdin;
-		}
-	}
-	else{
-		fprintf(stderr, "WTF...Give mama some arguments ;P \n");
-		return 0;
+	else 
+	{
+		printf("Give an input from here\n");
+		yyin=stdin;	
 	}
 	
-	//obj = SymTable_new();
-	
-	struct SymTable* Head=SymTable_new(509);
-    ScopeTable=SymTable_new(100);
-    Head=insertNodeToHash(Head,"print","funLib",0,0,0);
-    Head=insertNodeToHash(Head,"input","funLib",0,1,0);
-    Head=insertNodeToHash(Head,"objectmemberkeys","funLib",0,2,0);
-    Head=insertNodeToHash(Head,"objectcopy","funLib",0,3,0);
-    Head=insertNodeToHash(Head,"totalarguments","funLib",0,4,0);
-	Head=insertNodeToHash(Head,"arguments","funLib",0,5,0);
-    Head=insertNodeToHash(Head,"typeof","funLib",0,6,0);
-    Head=insertNodeToHash(Head,"stronum","funLib",0,7,0);
-    Head=insertNodeToHash(Head,"sqrt","funLib",0,8,0);
-    Head=insertNodeToHash(Head,"cos","funLib",0,9,0);
-    Head=insertNodeToHash(Head,"sin","funLib",0,10,0);
-    
+	Head=SymTable_new(509);
+	ScopeTable=SymTable_new(100);
+	insertNodeToHash(Head,"print","funLib",0,0,1);
+	insertNodeToHash(Head,"input","funLib",0,0,1);
+    	insertNodeToHash(Head,"objectmemberkeys","funLib",0,0,1);
+	insertNodeToHash(Head,"objecttotalmembers","funLib",0,0,1);
+    	insertNodeToHash(Head,"objectcopy","funLib",0,0,1);
+    	insertNodeToHash(Head,"totalarguments","funLib",0,0,1);
+	insertNodeToHash(Head,"arguments","funLib",0,0,1);
+    	insertNodeToHash(Head,"typeof","funLib",0,0,1);
+    	insertNodeToHash(Head,"stronum","funLib",0,0,1);
+    	insertNodeToHash(Head,"sqrt","funLib",0,0,1);
+    	insertNodeToHash(Head,"cos","funLib",0,0,1);
+    	insertNodeToHash(Head,"sin","funLib",0,0,1);
+
+	insertNodeToHash(Head,"f","user function",0,6,1);
+	//insertNodeToHash(Head,"f","user function",1,6,1);
+    	insertNodeToHash(Head,"g","user function",3,13,1);
+    	
 	yyparse();
+	printScopeTable(ScopeTable);
 	return 0;
 }
