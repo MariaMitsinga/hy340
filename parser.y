@@ -13,7 +13,7 @@
 	extern char * yytext;
 	extern FILE * yyin;
 	extern FILE * yyout;
-	
+	int numname=0;
 	int scope=0;
 %}
 
@@ -134,8 +134,10 @@ expr:		assgnexpr {fprintf(yyout," expr ==> assgnexpr \n");}
 term:		LEFT_PARENTHESES expr RIGHT_PARENTHESES {fprintf(yyout," term ==> (expr) \n");}
 		| MINUS expr {fprintf(yyout," term ==> -expr \n");}
 		| NOT expr {fprintf(yyout," term ==> !expr \n");}
-		| DOUBLE_PLUS lvalue 	{fprintf(yyout," term ==> ++lvalue \n");}
-		| lvalue DOUBLE_PLUS	{fprintf(yyout," term ==> lvalue++ \n");}
+		| DOUBLE_PLUS lvalue 	{	fprintf(yyout,"---%s---\n",yytext);
+						fprintf(yyout," term ==> ++lvalue \n");
+					}
+		| lvalue {fprintf(yyout,"---%s---\n",yytext);} DOUBLE_PLUS {fprintf(yyout," term ==> lvalue++ \n");}
 		| DOUBLE_MINUS lvalue	{fprintf(yyout," term ==> --lvalue \n");}
 		| lvalue DOUBLE_MINUS	{fprintf(yyout," term ==> lvalue-- \n");}
 		| primary {fprintf(yyout," term ==> primary \n");}
@@ -262,7 +264,19 @@ block:		LEFT_CURLY_BRACKET {scope++; } stamt RIGHT_CURLY_BRACKET {	Hide(ScopeTab
 										fprintf(yyout," block ==> { [stmt] } \n");}
 		;
 
-funcdef: 	FUNCTION LEFT_PARENTHESES idlist RIGHT_PARENTHESES block	{fprintf(yyout," funcdef ==> function(){} \n");}
+funcdef: 	FUNCTION { 
+			char* name=(char *)malloc(sizeof(char));
+        		char* num=(char *)malloc(sizeof(char));
+			sprintf(name, "%s", "$f");					
+			sprintf(num, "%d", numname);	
+			strcat(name,num);
+			insertNodeToHash(Head,name,"user function",scope,yylineno,1); 
+			free(name);
+			free(num);
+			numname++;
+			scope++;
+		} 
+		LEFT_PARENTHESES idlist RIGHT_PARENTHESES{scope--;} block	{fprintf(yyout," funcdef ==> function(){} \n");}
 		|FUNCTION id LEFT_PARENTHESES idlist RIGHT_PARENTHESES block	{fprintf(yyout," funcdef ==> function id(){} \n");}
 		;
 
@@ -334,12 +348,8 @@ int main(int argc, char** argv)
     	insertNodeToHash(Head,"sqrt","funLib",0,0,1);
     	insertNodeToHash(Head,"cos","funLib",0,0,1);
     	insertNodeToHash(Head,"sin","funLib",0,0,1);
-
-	insertNodeToHash(Head,"f","user function",0,6,1);
-	//insertNodeToHash(Head,"f","user function",1,6,1);
-    	insertNodeToHash(Head,"g","user function",3,13,1);
     	
 	yyparse();
-	printScopeTable(ScopeTable);
+	//printScopeTable(ScopeTable);
 	return 0;
 }
