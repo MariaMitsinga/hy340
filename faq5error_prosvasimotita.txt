@@ -1,0 +1,6 @@
+{
+ y=1;
+ function ex(a){
+    y=3; //error var y in line 2 is not accessible in function ex
+ }
+}

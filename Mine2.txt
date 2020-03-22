@@ -1,0 +1,15 @@
+x=5;
+function maria(y){
+	local x;
+
+	function alex(){
+		local x;
+		marianthi();
+		return y;
+
+		function marianthi(){
+			local x;
+			alex();
+		}
+	}
+}

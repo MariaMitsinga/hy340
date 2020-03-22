@@ -1,0 +1,17 @@
+x=5;
+print(x);
+
+function a(x,y){
+	local x;
+	::print(x);
+	return x+y;
+}
+
+print(a(1,2));
+
+a=2;
+function b(){
+	local y;
+	print(y);
+	a(2,3);
+}
