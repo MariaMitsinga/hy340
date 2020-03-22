@@ -93,7 +93,7 @@ struct SymTable* insertNodeToScope(struct SymTable* root,struct SymTableEntry *n
 /* eisagwgh sto Symbol Table
     einai mai aplh eisagwgh se hash table den xreiazetai na pw kati
 */
-struct SymTable* insertNodeToHash(struct SymTable* root,const char* name,char* type,unsigned int scope,unsigned int line,int isActive)
+struct SymTableEntry* insertNodeToHash(struct SymTable* root,const char* name,char* type,unsigned int scope,unsigned int line,int isActive)
 {
     unsigned int position= SymTable_hash(name);
     struct SymTableEntry *tmp=root->head[position];
@@ -127,7 +127,7 @@ struct SymTable* insertNodeToHash(struct SymTable* root,const char* name,char* t
     ScopeTable=insertNodeToScope(ScopeTable,node,node->scope);
 
     root->size++;
-    return root;
+    return node;
 }
 
 /* kanw hide ta stoixeia enos sygkekrimenou scope
