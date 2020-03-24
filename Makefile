@@ -1,6 +1,6 @@
 all:
-	bison --yacc --output=parser.c parser.y -v
-	flex --outfile=scanner.c Bfasi.l
+	bison --yacc --defines --output=parser.c parser.y
+	flex --outfile=scanner.c scanner.l
 	gcc -o calc scanner.c parser.c
 
 clean:
