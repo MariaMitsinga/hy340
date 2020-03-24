@@ -116,6 +116,8 @@ stmt:		expr SEMI_COLON {fprintf(yyout," stmt ==> expr ;\n");}
 		|CONTINUE SEMI_COLON {fprintf(yyout," stmt ==> break; \n");}
 		|block {fprintf(yyout," stmt ==> {} \n");}
 		|funcdef {fprintf(yyout," stmt ==> funcdef \n");}
+		|SEMI_COLON {fprintf(yyout," stmt ==> ; \n");}
+
 		;
 
 expr:		assgnexpr {fprintf(yyout," expr ==> assgnexpr \n");}
@@ -138,29 +140,29 @@ expr:		assgnexpr {fprintf(yyout," expr ==> assgnexpr \n");}
 term:		LEFT_PARENTHESES expr RIGHT_PARENTHESES {fprintf(yyout," term ==> (expr) \n");}
 		| MINUS expr %prec UMINUS {fprintf(yyout," term ==> -expr \n");}
 		| NOT expr {fprintf(yyout," term ==> !expr \n");}
-		| DOUBLE_PLUS lvalue 	{ if($2!=NULL)
-					  {if(strcmp($2->type,"user function")==0 || strcmp("library function", $2->type)==0)
-					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$2->name,$2->line);}
+		| DOUBLE_PLUS lvalue 	{ if($2!=NULL){
+					  if(strcmp($2->type,"user function")==0 || strcmp("library function", $2->type)==0)
+					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$2->name,$2->line);}
 					  fprintf(yyout," term ==> ++lvalue \n");}
-		| lvalue DOUBLE_PLUS	{ if($1!=NULL)
-					  {if(strcmp($1->type,"user function")==0 || strcmp("library function", $1->type)==0)
-					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$1->name,$1->line);}
+		| lvalue DOUBLE_PLUS	{ if($1!=NULL){
+					  if(strcmp($1->type,"user function")==0 || strcmp("library function", $1->type)==0)
+					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$1->name,$1->line);}
 					  fprintf(yyout," term ==> lvalue++ \n");}
-		| DOUBLE_MINUS lvalue	{ if($2!=NULL)
-					  {if(strcmp($2->type,"user function")==0 || strcmp("library function", $2->type)==0)
-					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$2->name,$2->line);}
+		| DOUBLE_MINUS lvalue	{ if($2!=NULL){
+					  if(strcmp($2->type,"user function")==0 || strcmp("library function", $2->type)==0)
+					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$2->name,$2->line);}
 					  fprintf(yyout," term ==> --lvalue \n");}
-		| lvalue DOUBLE_MINUS	{ if($1!=NULL)
-					  {if(strcmp($1->type,"user function")==0 || strcmp("library function", $1->type)==0)
-					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$1->name,$1->line);}
+		| lvalue DOUBLE_MINUS	{ if($1!=NULL){
+					  if(strcmp($1->type,"user function")==0 || strcmp("library function", $1->type)==0)
+					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$1->name,$1->line);}
 					  fprintf(yyout," term ==> lvalue-- \n");}
 		| primary {fprintf(yyout," term ==> primary \n");}
 		;
 
 assgnexpr:	lvalue EQUAL expr {	//fprintf(yyout,"\n\nlvalue:%d\n\n",$1);
-					if($1!=NULL)
-					{if(strcmp($1->type,"user function")==0 || strcmp("library function", $1->type)==0)
-					fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$1->name,yylineno);}
+					if($1!=NULL){
+					if(strcmp($1->type,"user function")==0 || strcmp("library function", $1->type)==0)
+					fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned %s in line %d\n\n",$1->name,yylineno);}
 					fprintf(yyout," assgnexpr ==> Ivalue=expr \n");}
 		;
 
@@ -330,8 +332,8 @@ idlist:		id {
 			else if (tmp==NULL && collisionLibFun(ScopeTable,yytext)==0)
 				insertNodeToHash(Head,yytext,"formal argument",scope,yylineno,1);
 			 
-		   } idlist1	{fprintf(yyout, "id,id* ==> idlist;\n");}
-		| /* empty */	{fprintf(yyout, "id,id* ==> idlist;\n");}
+		   } idlist1	{fprintf(yyout, " idlist ==> id,id*;\n");}
+		| /* empty */	{fprintf(yyout, " idlist ==> \n");}
 		;	
 
 idlist1:	COMMA id {
@@ -345,12 +347,12 @@ idlist1:	COMMA id {
 			else if (tmp==NULL && collisionLibFun(ScopeTable,yytext)==0)
 				insertNodeToHash(Head,yytext,"formal argument",scope,yylineno,1);
 			 
-		   } idlist1	{fprintf(yyout, "id,id* ==> idlist;\n");}
-		| /* empty */	{fprintf(yyout, "id,id* ==> idlist;\n");}
+		   } idlist1	{fprintf(yyout, " idlist ==> id,id*;\n");}
+		| /* empty */	{fprintf(yyout, " idlist ==>   \n");}
 		;
 
-ifstmt:		IF LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt			{fprintf(yyout, "ifstmt ==> IF THEN;\n");}
-		| IF LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt ELSE stmt	{fprintf(yyout, "ifstmt ==> IF THEN ELSE;\n");}
+ifstmt:		IF LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt			{fprintf(yyout, " ifstmt ==> IF THEN;\n");}
+		| IF LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt ELSE stmt	{fprintf(yyout, " ifstmt ==> IF THEN ELSE;\n");}
 		;
 
 whilestmt :	WHILE LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt {fprintf(yyout," whilestmt==> while(expr) stmt \n");}
@@ -359,8 +361,8 @@ whilestmt :	WHILE LEFT_PARENTHESES expr RIGHT_PARENTHESES stmt {fprintf(yyout," 
 forstmt:	FOR LEFT_PARENTHESES elist SEMI_COLON expr SEMI_COLON elist RIGHT_PARENTHESES stmt {fprintf(yyout," forstmt ==> (elist;expr;elist)stmt \n");}
 		;
 
-returnstmt:	RETURN SEMI_COLON {fprintf(yyout,"returnstmt ==> return ;\n");}
-		| RETURN expr SEMI_COLON {fprintf(yyout,"returnstmt ==> return expr;\n");}
+returnstmt:	RETURN SEMI_COLON {fprintf(yyout," returnstmt ==> return ;\n");}
+		| RETURN expr SEMI_COLON {fprintf(yyout," returnstmt ==> return expr;\n");}
 		;
 
 %%
