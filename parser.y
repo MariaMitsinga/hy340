@@ -141,19 +141,19 @@ term:		LEFT_PARENTHESES expr RIGHT_PARENTHESES {fprintf(yyout," term ==> (expr) 
 		| NOT expr {fprintf(yyout," term ==> !expr \n");}
 		| DOUBLE_PLUS lvalue 	{ if($2!=NULL){
 					  if(strcmp($2->type,"user function")==0 || strcmp("library function", $2->type)==0)
-					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$2->name,$2->line);}
+					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$2->name,yylineno);}
 					  fprintf(yyout," term ==> ++lvalue \n");}
 		| lvalue DOUBLE_PLUS	{ if($1!=NULL){
 					  if(strcmp($1->type,"user function")==0 || strcmp("library function", $1->type)==0)
-					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$1->name,$1->line);}
+					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$1->name,yylineno);}
 					  fprintf(yyout," term ==> lvalue++ \n");}
 		| DOUBLE_MINUS lvalue	{ if($2!=NULL){
 					  if(strcmp($2->type,"user function")==0 || strcmp("library function", $2->type)==0)
-					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$2->name,$2->line);}
+					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$2->name,yylineno);}
 					  fprintf(yyout," term ==> --lvalue \n");}
 		| lvalue DOUBLE_MINUS	{ if($1!=NULL){
 					  if(strcmp($1->type,"user function")==0 || strcmp("library function", $1->type)==0)
-					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$1->name,$1->line);}
+					  fprintf(yyout,"\n\nERROR: value is a function so we cannot assigned: %s in line: %d\n\n",$1->name,yylineno);}
 					  fprintf(yyout," term ==> lvalue-- \n");}
 		| primary {fprintf(yyout," term ==> primary \n");}
 		;
