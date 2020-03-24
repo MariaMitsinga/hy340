@@ -82,7 +82,7 @@
 %nonassoc	GREATER GREATER_EQUAL LESS LESS_EQUAL
 %left	PLUS MINUS
 %left	MULTIPLE FORWARD_SLASH PERCENT
-%right	NOT DOUBLE_PLUS DOUBLE_MINUS
+%right	NOT DOUBLE_PLUS DOUBLE_MINUS UMINUS
 %left	DOT DOUBLE_DOT
 %left	LEFT_SQUARE_BRACKET RIGHT_SQUARE_BRACKET
 %left	LEFT_PARENTHESES RIGHT_PARENTHESES
@@ -136,25 +136,31 @@ expr:		assgnexpr {fprintf(yyout," expr ==> assgnexpr \n");}
 		;
 
 term:		LEFT_PARENTHESES expr RIGHT_PARENTHESES {fprintf(yyout," term ==> (expr) \n");}
-		| MINUS expr {fprintf(yyout," term ==> -expr \n");}
+		| MINUS expr %prec UMINUS {fprintf(yyout," term ==> -expr \n");}
 		| NOT expr {fprintf(yyout," term ==> !expr \n");}
-		| DOUBLE_PLUS lvalue 	{ if(strcmp($2->type,"user function")==0)
-					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$2->name,$2->line);
+		| DOUBLE_PLUS lvalue 	{ if($2!=NULL)
+					  {if(strcmp($2->type,"user function")==0 || strcmp("library function", $2->type)==0)
+					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$2->name,$2->line);}
 					  fprintf(yyout," term ==> ++lvalue \n");}
-		| lvalue DOUBLE_PLUS	{ if(strcmp($1->type,"user function")==0)
-					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$1->name,$1->line);
+		| lvalue DOUBLE_PLUS	{ if($1!=NULL)
+					  {if(strcmp($1->type,"user function")==0 || strcmp("library function", $1->type)==0)
+					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$1->name,$1->line);}
 					  fprintf(yyout," term ==> lvalue++ \n");}
-		| DOUBLE_MINUS lvalue	{ if(strcmp($2->type,"user function")==0)
-					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$2->name,$2->line);
+		| DOUBLE_MINUS lvalue	{ if($2!=NULL)
+					  {if(strcmp($2->type,"user function")==0 || strcmp("library function", $2->type)==0)
+					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$2->name,$2->line);}
 					  fprintf(yyout," term ==> --lvalue \n");}
-		| lvalue DOUBLE_MINUS	{ if(strcmp($1->type,"user function")==0)
-					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$1->name,$1->line);
+		| lvalue DOUBLE_MINUS	{ if($1!=NULL)
+					  {if(strcmp($1->type,"user function")==0 || strcmp("library function", $1->type)==0)
+					  fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$1->name,$1->line);}
 					  fprintf(yyout," term ==> lvalue-- \n");}
 		| primary {fprintf(yyout," term ==> primary \n");}
 		;
 
-assgnexpr:	lvalue EQUAL expr {	if(strcmp($1->type,"user function")==0)
-					fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$1->name,$1->line);
+assgnexpr:	lvalue EQUAL expr {	//fprintf(yyout,"\n\nlvalue:%d\n\n",$1);
+					if($1!=NULL)
+					{if(strcmp($1->type,"user function")==0 || strcmp("library function", $1->type)==0)
+					fprintf(yyout,"\n\nERROR: value is function cannot be assigned to %s in %d\n\n",$1->name,yylineno);}
 					fprintf(yyout," assgnexpr ==> Ivalue=expr \n");}
 		;
 
@@ -208,14 +214,15 @@ lvalue:		id	{
 		| LOCAL id	{	
 					fprintf(yyout," Ivalue ==> local \n");
 					struct SymTableEntry *tmp=NameLookUpInScope(ScopeTable,scope,yytext);
+					$$=tmp;
 					if(tmp==NULL && collisionLibFun(ScopeTable,yytext)==1)
 						fprintf(yyout,"\n\nERROR: local %s: Trying to shadow Library Function in line %d\n\n",yytext,yylineno);
 					if(tmp==NULL && collisionLibFun(ScopeTable,yytext)==0)
 					{
 						if(scope==0)
-							insertNodeToHash(Head,yytext,"global variable",scope,yylineno,1);
+							$$=insertNodeToHash(Head,yytext,"global variable",scope,yylineno,1);
 						else
-							insertNodeToHash(Head,yytext,"local variable",scope,yylineno,1);
+							$$=insertNodeToHash(Head,yytext,"local variable",scope,yylineno,1);
 
 					}
 
@@ -223,6 +230,7 @@ lvalue:		id	{
 		| NAMESPACE_ALIAS_QUALIFIER id	{
 							fprintf(yyout," Ivalue ==> ::id \n");
 							struct SymTableEntry *tmp=NameLookUpInScope(ScopeTable,0,yytext);
+							$$=tmp;
 							if(tmp==NULL)
 								printf("\n\nERROR: There is no member on global scope with the name %s in Line %d\n\n", yytext,yylineno);
 						}
@@ -287,9 +295,9 @@ funcdef: 	FUNCTION {
 			free(name);
 			free(num);
 			numname++;
-			scope++;	
+			//scope++;	
 		}
-		LEFT_PARENTHESES idlist RIGHT_PARENTHESES {scope--;} block	{fprintf(yyout," funcdef ==> function(){} \n");}
+		LEFT_PARENTHESES {scope++;} idlist RIGHT_PARENTHESES {scope--;} block	{fprintf(yyout," funcdef ==> function(){} \n");}
 		|FUNCTION id {
 				struct SymTableEntry *tmp;
 				tmp=NameLookUpInScope(ScopeTable,scope,yytext);
