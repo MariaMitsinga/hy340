@@ -117,7 +117,6 @@ stmt:		expr SEMI_COLON {fprintf(yyout," stmt ==> expr ;\n");}
 		|block {fprintf(yyout," stmt ==> {} \n");}
 		|funcdef {fprintf(yyout," stmt ==> funcdef \n");}
 		|SEMI_COLON {fprintf(yyout," stmt ==> ; \n");}
-
 		;
 
 expr:		assgnexpr {fprintf(yyout," expr ==> assgnexpr \n");}
